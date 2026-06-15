@@ -1,0 +1,25 @@
+{
+  "name": "gemini",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js",
+    "test": "echo \"No tests configured\""
+  },
+  "keywords": [],
+  "author": "Felipe Estrela (https://github.com/lipey1)",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@elysiajs/node": "^1.4.5",
+    "@google/genai": "^2.6.0",
+    "@libsql/client": "^0.17.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.2",
+    "elysia": "^1.4.28",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3"
+  }
+}

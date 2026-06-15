@@ -1,0 +1,7 @@
+node_modules/
+.env
+.gemini-browser-profile/
+data/sessions.sqlite
+data/sessions.sqlite-*
+tests/
+package-lock.json
