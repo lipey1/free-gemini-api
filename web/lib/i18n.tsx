@@ -23,8 +23,8 @@ export const dict = {
 
   // ── hero ──────────────────────────────────────────────
   "hero.tagline": {
-    en: "REST interface for Gemini web · Node.js 18 · Elysia",
-    pt: "Interface REST para o Gemini web · Node.js 18 · Elysia",
+    en: "REST interface for Gemini web · Node.js · Elysia",
+    pt: "Interface REST para o Gemini web · Node.js · Elysia",
   },
   "hero.title.a": { en: "REST access to Gemini,", pt: "Acesso REST ao Gemini," },
   "hero.title.b": {
@@ -32,8 +32,8 @@ export const dict = {
     pt: "sem SDK e sem navegador.",
   },
   "hero.body": {
-    en: "Free Gemini API is a thin HTTP proxy. It reproduces the StreamGenerate request issued by the Gemini web client, parses the response stream, and returns plain JSON. Built on Node.js 18 and Elysia, with no Puppeteer, no headless browser, and no official SDK in the request path.",
-    pt: "A Free Gemini API é um proxy HTTP fino. Ela reproduz a requisição StreamGenerate emitida pelo cliente web do Gemini, faz o parse do stream de resposta e retorna JSON puro. Construída sobre Node.js 18 e Elysia, sem Puppeteer, sem navegador headless e sem SDK oficial no caminho da requisição.",
+    en: "Free Gemini API is a thin HTTP proxy. It reproduces the StreamGenerate request issued by the Gemini web client, parses the response stream, and returns plain JSON. Built on Node.js and Elysia, with no Puppeteer, no headless browser, and no official SDK in the request path.",
+    pt: "A Free Gemini API é um proxy HTTP fino. Ela reproduz a requisição StreamGenerate emitida pelo cliente web do Gemini, faz o parse do stream de resposta e retorna JSON puro. Construída sobre Node.js e Elysia, sem Puppeteer, sem navegador headless e sem SDK oficial no caminho da requisição.",
   },
   "hero.cta.primary": { en: "Open the console", pt: "Abrir o console" },
   "hero.cta.secondary": { en: "View source", pt: "Ver o código-fonte" },
@@ -269,6 +269,17 @@ export const dict = {
   },
   "err.retryIn": { en: "Retry in", pt: "Repetir em" },
   "err.seconds": { en: "s", pt: "s" },
+
+  // ── 404 ───────────────────────────────────────────────
+  "nf.tagline": { en: "HTTP 404 · no route", pt: "HTTP 404 · sem rota" },
+  "nf.title": { en: "This route does not exist.", pt: "Esta rota não existe." },
+  "nf.body": {
+    en: "The address was mistyped, or the page it pointed to is gone. Nothing is wrong with the API itself — its endpoints are listed in the documentation.",
+    pt: "O endereço foi digitado incorretamente, ou a página para a qual ele apontava não existe mais. Não há problema algum com a API em si — seus endpoints estão listados na documentação.",
+  },
+  "nf.cta.primary": { en: "Back to home", pt: "Voltar para a home" },
+  "nf.cta.secondary": { en: "Open the console", pt: "Abrir o console" },
+  "nf.requested": { en: "requested path", pt: "caminho solicitado" },
 } as const;
 
 export type Key = keyof typeof dict;

@@ -56,7 +56,7 @@ usa os cookies daquela sessão e os renova a partir da resposta.
 Endpoints: `GET /`, `POST /create-session`, `POST /chat`,
 `GET|POST /session/status`, `GET /docs`, `GET /openapi.json`.
 
-Stack: Node.js 18+ (fetch nativo), Elysia + `@elysiajs/node`, `@elysiajs/cors`,
+Stack: Node.js (fetch nativo), Elysia + `@elysiajs/node`, `@elysiajs/cors`,
 jsonwebtoken, Drizzle ORM + libSQL (SQLite), dotenv.
 
 Limites confirmados, todos factuais e que a página **não pode maquiar**:

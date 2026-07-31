@@ -120,7 +120,7 @@ O código passou por simplificações deliberadas:
 | Tecnologia | Uso |
 |------------|-----|
 | **[Elysia](https://elysiajs.com)** + `@elysiajs/node` | Framework HTTP (rotas, request/response) |
-| **Node.js 18+** | Runtime (`fetch` nativo, sem polyfill) |
+| **Node.js** | Runtime (`fetch` nativo, sem polyfill) |
 | **jsonwebtoken** | JWT de sessão |
 | **Drizzle ORM** + **libSQL** | SQLite para persistir snapshots |
 | **dotenv** | Variáveis de ambiente |
@@ -166,7 +166,7 @@ Para um proxy I/O-bound como este, **qualquer framework Node moderno (Fastify, E
 
 ### Requisitos
 
-- Node.js 18+
+- Node.js
 - Credenciais de template em `src/config/gemini.js` (URL, body, headers `x-goog-ext-*` — sem cookie)
 
 ### Instalação

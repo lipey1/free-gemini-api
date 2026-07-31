@@ -2,17 +2,70 @@ import type { Metadata, Viewport } from "next";
 import { LangProvider } from "@/lib/i18n";
 import "./globals.css";
 
+const SITE_URL = "https://freegemini.felipeestrela.com.br";
+
+const DESCRIPTION =
+  "A thin HTTP proxy exposing the Gemini web StreamGenerate endpoint over REST. " +
+  "Built on Node.js and Elysia, with no Puppeteer and no official SDK in the " +
+  "request path. Independent project, not affiliated with Google.";
+
+// A screenshot of the live landing page. Link unfurls (Discord, Slack, X,
+// iMessage) show this instead of a bare title and blurb.
+const OG_IMAGE = {
+  url: "/og.png",
+  width: 2400,
+  height: 1260,
+  alt: "Free Gemini API landing page: a runnable cURL example against the /chat endpoint.",
+};
+
 export const metadata: Metadata = {
-  title: "Free Gemini API · REST access to Gemini, without an SDK or a browser",
-  description:
-    "A thin HTTP proxy exposing the Gemini web StreamGenerate endpoint over REST. Built on Node.js 18 and Elysia, with no Puppeteer and no official SDK in the request path. Independent project, not affiliated with Google.",
-  metadataBase: new URL("https://freegemini.felipeestrela.com.br"),
-  openGraph: {
-    title: "Free Gemini API",
-    description: "A thin HTTP proxy exposing Gemini web over REST. Node.js 18 and Elysia.",
-    type: "website",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Free Gemini API · REST access to Gemini, without an SDK or a browser",
+    // Sub-pages set only their own title; this keeps the brand on the end.
+    template: "%s · Free Gemini API",
   },
+  description: DESCRIPTION,
+  applicationName: "Free Gemini API",
+  keywords: [
+    "gemini api",
+    "free gemini api",
+    "gemini rest api",
+    "gemini http proxy",
+    "gemini without sdk",
+    "streamgenerate",
+    "elysia",
+    "node.js",
+  ],
   authors: [{ name: "Felipe Estrela", url: "https://github.com/lipey1" }],
+  creator: "Felipe Estrela",
+  alternates: { canonical: "/" },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large" },
+  },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: "Free Gemini API",
+    title: "Free Gemini API · REST access to Gemini",
+    description:
+      "A thin HTTP proxy exposing Gemini web over REST. Node.js and Elysia, " +
+      "no Puppeteer, no official SDK.",
+    locale: "en_US",
+    alternateLocale: ["pt_BR"],
+    images: [OG_IMAGE],
+  },
+  twitter: {
+    // Renders the screenshot full-width rather than as a thumbnail.
+    card: "summary_large_image",
+    title: "Free Gemini API · REST access to Gemini",
+    description:
+      "A thin HTTP proxy exposing Gemini web over REST. Node.js and Elysia, " +
+      "no Puppeteer, no official SDK.",
+    images: [OG_IMAGE.url],
+  },
 };
 
 export const viewport: Viewport = {
@@ -58,6 +111,30 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
+        {/* Schema.org description of the project, for search result rich data. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              name: "Free Gemini API",
+              applicationCategory: "DeveloperApplication",
+              operatingSystem: "Node.js",
+              description: DESCRIPTION,
+              url: SITE_URL,
+              image: `${SITE_URL}/og.png`,
+              codeRepository: "https://github.com/lipey1/free-gemini-api",
+              license: "https://opensource.org/licenses/ISC",
+              author: {
+                "@type": "Person",
+                name: "Felipe Estrela",
+                url: "https://github.com/lipey1",
+              },
+              offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+            }),
+          }}
+        />
         <LangProvider>{children}</LangProvider>
       </body>
     </html>
