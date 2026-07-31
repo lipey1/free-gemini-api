@@ -854,18 +854,21 @@ h2 {
   color: var(--muted);
 }
 .none-track {
-  height: 16px;
+  /* Minimum, not fixed. On narrow screens the label wraps to two lines and a
+     fixed 16px box let the text spill straight through the dashed border. */
+  min-height: 16px;
   border: 1px dashed var(--line);
   border-radius: 3px;
   display: flex;
   align-items: center;
-  padding-left: 9px;
+  padding: 3px 9px;
 }
 .none-track span {
   font-family: var(--mono);
   font-size: 10.5px;
   color: var(--faint);
   letter-spacing: 0.08em;
+  line-height: 1.5;
 }
 
 /* ══ DISCLAIMER ══════════════════════════════════════════ */
