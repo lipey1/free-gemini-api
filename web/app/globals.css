@@ -1,0 +1,1399 @@
+/* ══════════════════════════════════════════════════════════
+   Free Gemini API · tokens from brand/brand-guide.html v1.0
+   Direction: Terminal Dark
+   ══════════════════════════════════════════════════════════ */
+
+:root {
+  --void: #0a0a0b;
+  --surface: #131316;
+  --surface-2: #1b1b20;
+  --line: #26262c;
+  --line-soft: #1d1d22;
+  --ink: #fafafa;
+  --ink-2: #b4b4bd;
+  --muted: #7c7c87;
+  --faint: #4a4a53;
+
+  --accent: #4f8cff;
+  --accent-hi: #8fb6ff;
+  --accent-dim: #16233d;
+  --mint: #24c8a0;
+  --amber: #ffb454;
+  --rose: #ff6b6b;
+
+  --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+  --s8: 64px;
+  --s9: 96px;
+  --s10: 128px;
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+
+  --maxw: 1140px;
+  --gutter: 88px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  /* `clip`, never `hidden`. overflow-x:hidden computes overflow-y to `auto`,
+     which turns the element into a scroll container. ScrollTrigger then reads
+     scroll from it instead of the document and every trigger freezes at 0. */
+  overflow-x: clip;
+}
+
+body {
+  background: var(--void);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--accent);
+  color: #04101f;
+}
+
+/* ── scrollbar ─────────────────────────────────────────────
+   The default light scrollbar is the one bright rectangle on
+   an otherwise near-black page. Styled here for the document
+   and inherited by the chat log and any scrollable panel. */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 99px;
+  /* Transparent border with background-clip keeps the thumb slim without
+     shrinking the hit area below a comfortable target. */
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--faint);
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:active {
+  background: var(--muted);
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+p {
+  color: var(--ink-2);
+}
+.measure {
+  max-width: 62ch;
+}
+
+/* ── language ──────────────────────────────────────────────
+   Both languages ship in the markup; CSS reveals one. The
+   inline script in <head> stamps data-lang before first paint,
+   so a Portuguese visitor never sees English flash past.
+   English is the default when the attribute is missing. */
+[data-l="pt"] {
+  display: none;
+}
+html[data-lang="pt"] [data-l="pt"] {
+  display: inline;
+}
+html[data-lang="pt"] [data-l="en"] {
+  display: none;
+}
+
+a {
+  color: inherit;
+}
+
+.wrap {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding-left: var(--s5);
+  padding-right: var(--s5);
+}
+
+/* ── skip link ─────────────────────────────────────────── */
+.skip {
+  position: fixed;
+  top: var(--s3);
+  left: var(--s3);
+  z-index: 99;
+  background: var(--accent);
+  color: #04101f;
+  padding: var(--s2) var(--s4);
+  border-radius: var(--r-sm);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-250%);
+  transition: transform 0.2s var(--ease);
+}
+.skip:focus {
+  transform: none;
+}
+
+/* ══ HEADER ══════════════════════════════════════════════ */
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(10, 10, 11, 0.82);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line-soft);
+}
+.top-in {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: var(--s3) var(--s5);
+  display: flex;
+  align-items: center;
+  gap: var(--s4);
+}
+.lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.lockup .wm {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.028em;
+  color: var(--ink);
+  line-height: 1;
+}
+.lockup .wm i {
+  font-style: normal;
+  color: var(--muted);
+  font-weight: 500;
+}
+.lockup .tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--accent);
+  letter-spacing: 0.13em;
+  border: 1px solid var(--accent-dim);
+  background: rgba(79, 140, 255, 0.07);
+  padding: 3px 6px;
+  border-radius: 4px;
+  line-height: 1;
+}
+.top-spacer {
+  flex: 1;
+}
+.top-link {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--muted);
+  text-decoration: none;
+  padding: var(--s2) var(--s3);
+  border-radius: var(--r-sm);
+  transition: color 0.15s;
+  white-space: nowrap;
+}
+.top-link:hover {
+  color: var(--ink);
+}
+.top-link[data-active="true"] {
+  color: var(--ink);
+}
+
+.lang {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  flex: none;
+}
+.lang button {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  background: transparent;
+  color: var(--muted);
+  border: 0;
+  padding: 5px 9px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+/* Driven by the attribute the inline <head> script stamps, so the right
+   button is lit on the very first paint. English is the default. */
+html:not([data-lang="pt"]) .lang button[data-lang-btn="en"],
+html[data-lang="pt"] .lang button[data-lang-btn="pt"] {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.lang button:hover {
+  color: var(--ink);
+}
+
+/* ══ TRACE SHELL ═════════════════════════════════════════
+   The page hangs off one time axis in the left gutter.
+   Vertical padding rides on --pt/--pb custom properties so a
+   later `padding` shorthand can never wipe out padding-left.
+   ═══════════════════════════════════════════════════════ */
+.trace {
+  position: relative;
+}
+/* The axis is a real element so GSAP can scrub its height with scroll.
+   .axis-layer reproduces .wrap's box so the line lands on the same x as the
+   node dots, which are positioned inside .row. .axis is the dim full-length
+   track; .axis-fill is the lit portion that grows as the reader advances. */
+.axis-layer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding-left: var(--s5);
+  padding-right: var(--s5);
+  pointer-events: none;
+}
+.axis {
+  position: absolute;
+  left: calc(var(--s5) + var(--gutter));
+  /* Both ends are measured from the real nodes at runtime (see TraceMotion).
+     These values are only the pre-JS fallback. */
+  top: var(--axis-start, 60px);
+  /* Fallback only. TraceMotion measures the closing CTA at runtime and writes
+     the exact value here, so the axis lands on the button's lower edge at any
+     viewport, font size or line wrap. Deriving it from spacing tokens assumed
+     a button height that does not hold everywhere. */
+  bottom: var(--axis-end, var(--s9));
+  width: 1px;
+  background: var(--line-soft);
+}
+.axis-fill {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, var(--line), var(--faint));
+  transform-origin: top center;
+}
+.row {
+  position: relative;
+  /* Content clears the axis line AND the node dot sitting on it. Without the
+     extra gap the 7px dot bled into the first glyph of every kicker. */
+  padding-left: calc(var(--gutter) + var(--s5));
+  padding-top: var(--pt, 0px);
+  padding-bottom: var(--pb, 0px);
+}
+.t {
+  position: absolute;
+  left: 0;
+  width: calc(var(--gutter) - 18px);
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--faint);
+  line-height: 1.4;
+  padding-top: 5px;
+}
+.t b {
+  display: block;
+  color: var(--muted);
+  font-weight: 500;
+}
+.tick {
+  position: absolute;
+  /* centred on the 1px axis rule at var(--gutter) */
+  left: calc(var(--gutter) - 3px);
+  /* The timestamp beside it is in normal flow, so it starts after the row's
+     padding-top. A fixed offset here left the dot floating above its own label
+     by exactly that padding: 82px on the hero, 114px on the closing row. */
+  top: calc(var(--pt, 0px) + 10px);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--line);
+  box-shadow: 0 0 0 3px var(--void);
+}
+.tick[data-on="api"] {
+  background: var(--accent);
+}
+.tick[data-on="ext"] {
+  background: var(--muted);
+}
+.tick[data-on="end"] {
+  background: var(--rose);
+}
+
+/* ══ TYPE ════════════════════════════════════════════════ */
+h1 {
+  font-size: clamp(38px, 5.6vw, 62px);
+  line-height: 1.02;
+  font-weight: 700;
+  letter-spacing: -0.038em;
+}
+h1 .off {
+  color: var(--muted);
+  display: block;
+}
+h2 {
+  font-size: clamp(25px, 3.2vw, 34px);
+  line-height: 1.14;
+  font-weight: 600;
+  letter-spacing: -0.026em;
+}
+.kicker {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: var(--s3);
+}
+.sec-head {
+  margin-bottom: var(--s7);
+}
+.sec-head p {
+  margin-top: var(--s4);
+}
+
+/* ══ HERO ════════════════════════════════════════════════ */
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s7);
+  align-items: start;
+}
+.tagline {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--accent);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: var(--s5);
+}
+.hero-body {
+  font-size: 17px;
+  margin-top: var(--s5);
+}
+
+.cta-row {
+  display: flex;
+  gap: var(--s3);
+  margin-top: var(--s6);
+  flex-wrap: wrap;
+  align-items: center;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+  font-size: 14.5px;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 12px 18px;
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.18s var(--ease), background 0.18s, border-color 0.18s,
+    color 0.18s;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #04101f;
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hi);
+  transform: translateY(-1px);
+}
+.btn-ghost {
+  color: var(--ink-2);
+  border-color: var(--line);
+  background: transparent;
+}
+.btn-ghost:hover:not(:disabled) {
+  border-color: var(--muted);
+  color: var(--ink);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ══ TERMINAL ════════════════════════════════════════════ */
+.term {
+  background: #08080a;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  box-shadow: 0 18px 44px -20px rgba(0, 0, 0, 0.9);
+}
+.term-bar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px var(--s4);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.d {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.term-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--faint);
+  margin-left: 6px;
+}
+.term-body {
+  padding: var(--s4) var(--s5) var(--s5);
+  font-family: var(--mono);
+  /* Fluid so a long curl line fits narrow viewports without a scrollbar. */
+  font-size: clamp(10.5px, 1.05vw, 12.5px);
+  line-height: 1.95;
+}
+.term-body pre {
+  /* pre-wrap keeps the authored line breaks and indentation but lets an
+     over-long command fold instead of opening a horizontal scrollbar. */
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  font: inherit;
+}
+.p {
+  color: var(--mint);
+}
+.fl {
+  color: var(--amber);
+}
+.st {
+  color: var(--accent-hi);
+}
+.dm {
+  color: var(--faint);
+}
+.ky {
+  color: var(--accent);
+}
+.ok {
+  color: var(--mint);
+}
+.wait {
+  color: var(--faint);
+}
+
+/* ══ WATERFALL ═══════════════════════════════════════════ */
+.wf {
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  overflow: hidden;
+}
+.wf-head {
+  display: grid;
+  grid-template-columns: 200px 1fr 78px;
+  gap: var(--s4);
+  padding: 10px var(--s4);
+  border-bottom: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.wf-head span:last-child {
+  text-align: right;
+}
+.bar-row {
+  display: grid;
+  grid-template-columns: 200px 1fr 78px;
+  gap: var(--s4);
+  padding: 9px var(--s4);
+  align-items: center;
+  border-bottom: 1px solid var(--line-soft);
+}
+.bar-row:last-child {
+  border-bottom: 0;
+}
+.bar-row.child .op {
+  padding-left: var(--s4);
+  position: relative;
+}
+.bar-row.child .op::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 50%;
+  width: 7px;
+  height: 1px;
+  background: var(--line);
+}
+.op {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.op em {
+  font-style: normal;
+  color: var(--faint);
+}
+.track {
+  position: relative;
+  height: 16px;
+  background: var(--surface-2);
+  border-radius: 3px;
+}
+.bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--x, 0%);
+  width: var(--w, 10%);
+  min-width: 3px;
+  border-radius: 3px;
+  background: var(--accent);
+  transform-origin: left center;
+}
+.bar[data-kind="ext"] {
+  background: repeating-linear-gradient(115deg, #34343c 0 5px, #23232a 5px 10px);
+  border: 1px solid #43434d;
+}
+.dur {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--muted);
+  text-align: right;
+}
+.dur[data-hot="true"] {
+  color: var(--ink);
+}
+.wf-foot {
+  padding: var(--s4);
+  border-top: 1px solid var(--line);
+  background: var(--surface-2);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s4);
+  flex-wrap: wrap;
+}
+.wf-foot b {
+  color: var(--ink);
+  font-weight: 500;
+}
+.legend {
+  display: flex;
+  gap: var(--s5);
+  flex-wrap: wrap;
+  margin-top: var(--s4);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.legend i {
+  display: inline-block;
+  width: 22px;
+  height: 9px;
+  border-radius: 2px;
+  margin-right: 7px;
+  vertical-align: -1px;
+}
+.callout {
+  margin-top: var(--s6);
+  padding: var(--s5);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.callout p {
+  font-size: 15px;
+}
+
+/* ══ FLOW ════════════════════════════════════════════════ */
+.flow {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  gap: var(--s3);
+  align-items: stretch;
+  margin-top: var(--s6);
+}
+.node {
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  padding: var(--s5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+.node[data-own="true"] {
+  border-color: var(--accent-dim);
+  background: linear-gradient(180deg, rgba(79, 140, 255, 0.06), transparent);
+}
+.node h3 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.node .who {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.node[data-own="true"] .who {
+  color: var(--accent);
+}
+.node ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: auto;
+}
+.node li {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--muted);
+  padding-left: 13px;
+  position: relative;
+  line-height: 1.5;
+}
+.node li::before {
+  content: "·";
+  position: absolute;
+  left: 3px;
+  color: var(--faint);
+}
+.arrow {
+  display: grid;
+  place-items: center;
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 16px;
+}
+
+/* ══ ENDPOINTS ═══════════════════════════════════════════ */
+.ep {
+  border-top: 1px solid var(--line-soft);
+}
+.ep:last-of-type {
+  border-bottom: 1px solid var(--line-soft);
+}
+.ep-in {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) 1fr;
+  gap: var(--s6);
+  padding-top: var(--s6);
+  padding-bottom: var(--s6);
+  align-items: start;
+}
+.ep-sig {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.verb {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 4px 7px;
+  border-radius: 4px;
+  line-height: 1;
+}
+.verb[data-m="POST"] {
+  background: var(--accent-dim);
+  color: var(--accent-hi);
+}
+.verb[data-m="GET"] {
+  background: #14251f;
+  color: var(--mint);
+}
+.path {
+  font-family: var(--mono);
+  font-size: 16px;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.ep-body {
+  font-size: 14.5px;
+  margin-top: var(--s3);
+}
+.ep-note {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--faint);
+  margin-top: var(--s3);
+}
+.snip {
+  background: #08080a;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: var(--s4);
+  font-family: var(--mono);
+  font-size: clamp(10.5px, 1vw, 12px);
+  line-height: 1.8;
+}
+.snip pre {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  font: inherit;
+}
+
+/* ══ QUOTA ═══════════════════════════════════════════════ */
+.quota {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s5);
+  margin-top: var(--s6);
+}
+.q {
+  display: grid;
+  grid-template-columns: minmax(0, 240px) 1fr 120px;
+  gap: var(--s4);
+  align-items: center;
+}
+.q > div {
+  min-width: 0;
+}
+.q-name {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.q-track {
+  height: 6px;
+  background: var(--surface-2);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.q-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--amber);
+  opacity: 0.85;
+  transform-origin: left center;
+}
+.q-val {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+  text-align: right;
+}
+.q-env {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--faint);
+  margin-top: 5px;
+  /* RATE_LIMIT_CREATE_SESSION_INTERVAL_SEC has no break opportunities */
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+}
+
+/* ══ NOT-DOING ═══════════════════════════════════════════ */
+.none-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.85fr) 1fr;
+  gap: var(--s5);
+  align-items: center;
+  padding-top: var(--s4);
+  padding-bottom: var(--s4);
+  border-bottom: 1px solid var(--line-soft);
+}
+.none-row:last-child {
+  border-bottom: 0;
+}
+.none-op {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--muted);
+}
+.none-track {
+  height: 16px;
+  border: 1px dashed var(--line);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  padding-left: 9px;
+}
+.none-track span {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--faint);
+  letter-spacing: 0.08em;
+}
+
+/* ══ DISCLAIMER ══════════════════════════════════════════ */
+.disc {
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  padding: var(--s6);
+}
+.disc h3 {
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: var(--s4);
+  letter-spacing: -0.015em;
+}
+.disc ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+.disc li {
+  display: flex;
+  gap: var(--s3);
+  font-size: 14.5px;
+  color: var(--ink-2);
+  line-height: 1.55;
+}
+.disc li b {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--amber);
+  padding-top: 3px;
+  letter-spacing: 0.06em;
+}
+
+/* ══ FOOTER ══════════════════════════════════════════════ */
+.site-footer {
+  border-top: 1px solid var(--line-soft);
+  padding-top: var(--s6);
+  padding-bottom: var(--s8);
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--faint);
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s4);
+  flex-wrap: wrap;
+}
+.site-footer a {
+  color: var(--muted);
+  text-decoration: none;
+}
+.site-footer a:hover {
+  color: var(--accent);
+}
+
+/* ══════════════════════════════════════════════════════════
+   PLAYGROUND
+   ══════════════════════════════════════════════════════════ */
+.pg-head {
+  padding-top: var(--s8);
+  padding-bottom: var(--s6);
+}
+.pg-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--s4);
+  flex-wrap: wrap;
+  margin-top: var(--s5);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--faint);
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  padding: 4px 11px;
+}
+.pill i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--faint);
+}
+.pill[data-live="true"] i {
+  background: var(--mint);
+  box-shadow: 0 0 0 3px rgba(36, 200, 160, 0.16);
+}
+
+/* ── conversation ──────────────────────────────────────── */
+.chat {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  min-height: 62vh;
+  overflow: hidden;
+}
+.chat-log {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--s6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s6);
+  scroll-behavior: smooth;
+}
+
+.msg {
+  display: grid;
+  grid-template-columns: 74px 1fr;
+  gap: var(--s4);
+  align-items: start;
+}
+.msg-who {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--faint);
+  padding-top: 4px;
+  text-align: right;
+}
+.msg[data-role="user"] .msg-who {
+  color: var(--accent);
+}
+.msg-text {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--ink-2);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.msg[data-role="user"] .msg-text {
+  color: var(--ink);
+  white-space: pre-wrap;
+}
+
+/* rendered markdown inside a reply */
+.md > * + * {
+  margin-top: var(--s3);
+}
+.md strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+.md em {
+  color: var(--ink);
+}
+.md code {
+  font-family: var(--mono);
+  font-size: 0.88em;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: var(--accent-hi);
+}
+.md pre {
+  background: #08080a;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: var(--s4);
+  overflow-x: auto;
+}
+.md pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--ink-2);
+  font-size: 12.5px;
+  line-height: 1.75;
+}
+.md ul,
+.md ol {
+  padding-left: 1.3em;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.md li::marker {
+  color: var(--faint);
+}
+.md h3,
+.md h4,
+.md h5,
+.md h6 {
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.md a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.md hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+.msg-foot {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--faint);
+  margin-top: var(--s3);
+  display: flex;
+  gap: var(--s3);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* the wait, drawn as a live span bar in the landing's grammar */
+.pending .track {
+  margin-top: var(--s2);
+  max-width: 340px;
+}
+.pending .bar-live {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 3px;
+  background: repeating-linear-gradient(115deg, #34343c 0 5px, #23232a 5px 10px);
+  border: 1px solid #43434d;
+  animation: grow 6s var(--ease) forwards;
+}
+@keyframes grow {
+  from {
+    width: 2%;
+  }
+  to {
+    width: 100%;
+  }
+}
+.pending-label {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ── error ─────────────────────────────────────────────── */
+.err {
+  border: 1px solid #3a2020;
+  background: rgba(255, 107, 107, 0.05);
+  border-radius: var(--r-md);
+  padding: var(--s4) var(--s5);
+}
+.err[data-tone="warn"] {
+  border-color: #3a3020;
+  background: rgba(255, 180, 84, 0.05);
+}
+.err-code {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  color: var(--rose);
+  margin-bottom: 6px;
+}
+.err[data-tone="warn"] .err-code {
+  color: var(--amber);
+}
+.err p {
+  font-size: 14px;
+  color: var(--ink-2);
+}
+.err-actions {
+  margin-top: var(--s3);
+  display: flex;
+  gap: var(--s2);
+}
+.btn-sm {
+  font-size: 12.5px;
+  padding: 6px 12px;
+}
+
+/* ── empty state ───────────────────────────────────────── */
+.empty {
+  margin: auto;
+  text-align: center;
+  padding: var(--s6) 0;
+  max-width: 46ch;
+}
+.empty h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: var(--s2);
+}
+.empty p {
+  font-size: 14px;
+}
+.samples {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  margin-top: var(--s6);
+}
+.samples-label {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: var(--s1);
+}
+.sample {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--ink-2);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 10px var(--s4);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, color 0.15s;
+}
+.sample:hover {
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+/* ── composer ──────────────────────────────────────────── */
+.composer {
+  border-top: 1px solid var(--line);
+  background: var(--surface-2);
+  padding: var(--s4);
+}
+.composer-row {
+  display: flex;
+  gap: var(--s3);
+  align-items: flex-end;
+}
+.composer textarea {
+  flex: 1;
+  resize: none;
+  background: var(--void);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.55;
+  padding: 11px var(--s4);
+  min-height: 46px;
+  /* The field grows to fit its content (capped in JS), so it never shows a
+     scrollbar of its own. */
+  overflow-y: hidden;
+  transition: border-color 0.15s;
+}
+.composer textarea:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+.composer textarea::placeholder {
+  color: var(--muted);
+}
+.composer-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s4);
+  margin-top: var(--s3);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--faint);
+  flex-wrap: wrap;
+}
+.composer-foot button {
+  background: none;
+  border: 0;
+  color: var(--faint);
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.composer-foot button:hover {
+  color: var(--muted);
+}
+.counter[data-over="true"] {
+  color: var(--rose);
+}
+
+.pg-note {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--faint);
+  margin-top: var(--s4);
+  line-height: 1.6;
+  max-width: 74ch;
+}
+
+/* ══ MOTION ══════════════════════════════════════════════
+   Bars, meters and the axis are driven by GSAP (TraceMotion),
+   not CSS transitions: each span's draw time is proportional
+   to its measured duration, which a transition cannot express.
+   CSS only sets what must be true before JS runs. */
+.bar,
+.q-fill {
+  transform-origin: left center;
+  will-change: transform;
+}
+.dur {
+  transition: opacity 0.3s var(--ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .chat-log {
+    scroll-behavior: auto;
+  }
+  .pending .bar-live {
+    animation: none;
+    width: 40%;
+  }
+}
+
+/* ══ RESPONSIVE ══════════════════════════════════════════ */
+@media (max-width: 960px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: var(--s6);
+  }
+  .ep-in {
+    grid-template-columns: 1fr;
+    gap: var(--s4);
+  }
+  .flow {
+    grid-template-columns: 1fr;
+    gap: var(--s2);
+  }
+  .arrow {
+    transform: rotate(90deg);
+  }
+}
+
+@media (max-width: 760px) {
+  :root {
+    --gutter: 0px;
+  }
+  /* The axis is hidden here, so the gap that reserved room for it must go
+     too. Leaving it made the left margin 48px against 24px on the right. */
+  .row {
+    padding-left: 0;
+  }
+  .axis-layer {
+    display: none;
+  }
+  .t {
+    position: static;
+    width: auto;
+    text-align: left;
+    display: flex;
+    gap: var(--s2);
+    align-items: baseline;
+    padding-top: 0;
+    padding-bottom: var(--s3);
+  }
+  .t b {
+    display: inline;
+  }
+  .tick {
+    display: none;
+  }
+  .wf-head,
+  .bar-row {
+    grid-template-columns: 1fr 62px;
+  }
+  .wf-head span:nth-child(2),
+  .track {
+    display: none;
+  }
+  .pending .track {
+    display: block;
+  }
+  .q {
+    grid-template-columns: 1fr 92px;
+  }
+  .q-track {
+    display: none;
+  }
+  .none-row {
+    grid-template-columns: 1fr;
+    gap: var(--s2);
+  }
+  .msg {
+    grid-template-columns: 1fr;
+    gap: var(--s2);
+  }
+  .msg-who {
+    text-align: left;
+    padding-top: 0;
+  }
+  .top-link[data-hide-sm="true"] {
+    display: none;
+  }
+  .chat-log {
+    padding: var(--s4);
+  }
+}
+
+@media (max-width: 430px) {
+  /* At this width the lockup, one nav link and the language toggle are all
+     that fit, so the API chip is the first thing to go. */
+  .top-in {
+    gap: var(--s2);
+    padding-left: var(--s4);
+    padding-right: var(--s4);
+  }
+  .lockup .tag {
+    display: none;
+  }
+  .top-link {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+  .wrap {
+    padding-left: var(--s4);
+    padding-right: var(--s4);
+  }
+}

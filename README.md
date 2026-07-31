@@ -125,7 +125,7 @@ O código passou por simplificações deliberadas:
 | **Drizzle ORM** + **libSQL** | SQLite para persistir snapshots |
 | **dotenv** | Variáveis de ambiente |
 
-`express` aparece no `package.json` mas **não é usado** no fluxo atual — o servidor roda 100% em Elysia.
+`express` e `cors` já apareceram no `package.json` sem serem usados; foram removidos. O servidor roda 100% em Elysia, com CORS via `@elysiajs/cors`.
 
 ### Por que Elysia em vez de Express, Fastify, etc.?
 
@@ -216,19 +216,50 @@ O cliente precisa chamar `POST /create-session` de novo. Não tem relação com 
 ### Executar
 
 ```bash
-npm run dev    # desenvolvimento com --watch
-npm start      # produção
+npm run dev    # API com --watch, sem o site
+npm start      # produção (serve o site se web/out existir)
 ```
 
 A API sobe em `http://localhost:3333`.
+
+### Rodar site e API no mesmo processo
+
+O site (`web/`) é um Next.js com `output: "export"`, ou seja, vira HTML/CSS/JS
+estático. O Elysia serve esses arquivos como fallback depois das rotas da API, então
+tudo cabe em **um processo e um container**.
+
+```bash
+npm run build   # instala e builda o site em web/out
+npm start       # sobe API + site em http://localhost:3333
+```
+
+| Caminho | Serve |
+|---------|-------|
+| `/` | Landing page |
+| `/playground` | Chat de teste no navegador |
+| `/health` | Health check JSON |
+| `/create-session`, `/chat`, `/session/status` | API, inalterados |
+| `/docs`, `/openapi.json` | Swagger e spec |
+
+Se `web/out` não existir, a API funciona normalmente e a raiz devolve um JSON
+avisando para rodar `npm run build:web`. Para desenvolver o site com hot reload,
+use `npm run dev:web` (Next em `:3000`) junto com `npm run dev` (API em `:3333`).
+
+Servido assim, o navegador chama a API na **mesma origem** e o CORS deixa de ser
+necessário. Para hospedar o site separado da API, builde com
+`NEXT_PUBLIC_API_BASE=https://sua-api npm run build:web`.
 
 ---
 
 ## Endpoints
 
-### `GET /`
+### `GET /health`
 
 Health check.
+
+> **Mudou.** Este payload ficava em `GET /`. Desde que o site passou a ser servido
+> pelo mesmo processo, a raiz devolve a landing page e o health check mora em
+> `/health`. Os demais endpoints continuam nos mesmos caminhos.
 
 ```json
 {

@@ -1,7 +1,7 @@
 const fs = require("node:fs/promises");
 const path = require("node:path");
 const jwt = require("jsonwebtoken");
-const { askGemini } = require("../services/gemini-client");
+const { askGemini, lastTimings } = require("../services/gemini-client");
 const { captureGeminiSession } = require("../services/session-capture");
 const {
   ApiErrorCode,
@@ -21,16 +21,9 @@ const {
   checkStatusRateLimit,
 } = require("../services/rate-limit");
 const logger = require("../utils/logger");
+const { getClientIp } = require("../utils/client-ip");
 const defaultPromptPath = path.resolve(__dirname, "../config/default_prompt.txt");
 const PROMPT_MAX_LENGTH = 20_000;
-
-function getClientIp(request) {
-  const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) {
-    return forwarded.split(",")[0].trim();
-  }
-  return "unknown";
-}
 
 function extractToken(request, body) {
   const auth = request.headers.get("authorization");
@@ -150,7 +143,10 @@ async function handleSessionStatus({ request, body, set }) {
 
 function registerChatRoutes(app) {
   return app
-    .get("/", () => ({
+    // "/" now serves the landing page (see src/static.js). The health payload
+    // that used to live there moved here when the site and the API were merged
+    // into one process.
+    .get("/health", () => ({
       ok: true,
       message: "Free Gemini API online",
       endpoints: ["POST /create-session", "POST /chat", "GET /session/status", "POST /session/status"],
@@ -228,6 +224,18 @@ function registerChatRoutes(app) {
         return apiError(set, 401, ApiErrorCode.SESSION_TOKEN_REQUIRED);
       }
 
+      // Wall-clock per step. Only returned when TIMINGS=true, so the default
+      // response shape never changes. The landing page quotes these numbers,
+      // so they have to come from a real run rather than an estimate.
+      const marks = [];
+      const clock = () => Number(process.hrtime.bigint() / 1000n) / 1000;
+      let last = clock();
+      const mark = (name) => {
+        const now = clock();
+        marks.push({ name, ms: Number((now - last).toFixed(3)) });
+        last = now;
+      };
+
       let sid;
       try {
         const decoded = jwt.verify(token, process.env.SESSION_SECRET);
@@ -235,6 +243,7 @@ function registerChatRoutes(app) {
       } catch {
         return apiError(set, 401, ApiErrorCode.SESSION_TOKEN_INVALID);
       }
+      mark("auth.verify_jwt");
 
       const state = sid ? await getSessionState(sid) : { status: "missing" };
       if (state.status === "expired") {
@@ -255,13 +264,29 @@ function registerChatRoutes(app) {
           `${prompt.slice(0, previewLen)}`,
       );
 
+      mark("session.load");
+
       try {
         const outgoingPrompt = await buildOutgoingPrompt(prompt);
+        mark("payload.inject_prompt");
+
         const reply = await askGemini(outgoingPrompt, session.snapshot);
+        // askGemini bundles the round trip and the parse; split them apart.
+        marks.push({ name: "gemini.StreamGenerate", ms: lastTimings.networkMs });
+        marks.push({ name: "stream.parse", ms: lastTimings.parseMs });
+        last = clock();
+
         if (sid) {
           await updateSessionSnapshot(sid, session.snapshot);
         }
+        mark("session.save_cookies");
+
         logger.success("Resposta recebida do Gemini");
+
+        if (process.env.TIMINGS === "true") {
+          const totalMs = Number(marks.reduce((a, m) => a + m.ms, 0).toFixed(3));
+          return { ok: true, reply, timings: { totalMs, spans: marks } };
+        }
         return { ok: true, reply };
       } catch (error) {
         const msg = String(error?.message || "");

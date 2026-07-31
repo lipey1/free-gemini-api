@@ -278,14 +278,27 @@ async function callGemini(prompt, sessionSnapshot = null, options = {}) {
   };
 }
 
+/**
+ * Wall-clock split between the network round trip and parsing the stream.
+ * askGemini overwrites it on every call; read it right after awaiting.
+ * Only used to report real numbers when TIMINGS=true.
+ */
+const lastTimings = { networkMs: 0, parseMs: 0 };
+
 async function askGemini(prompt, sessionSnapshot = null) {
+  const t0 = process.hrtime.bigint();
   const { response, raw, headers } = await callGemini(prompt, sessionSnapshot);
+  const t1 = process.hrtime.bigint();
 
   if (!response.ok) {
     throw new Error(`Gemini HTTP ${response.status}: ${raw.slice(0, 300)}`);
   }
 
   const parsed = parseGeminiStream(raw);
+  const t2 = process.hrtime.bigint();
+
+  lastTimings.networkMs = Number((t1 - t0) / 1000n) / 1000;
+  lastTimings.parseMs = Number((t2 - t1) / 1000n) / 1000;
   if (!parsed?.text) {
     const code = parsed?.bardErrorCode;
     if (typeof code === "number") {
@@ -348,4 +361,5 @@ async function warmupSession(snapshot, seedPrompt) {
 module.exports = {
   askGemini,
   warmupSession,
+  lastTimings,
 };

@@ -1,0 +1,845 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Free Gemini API — Gemini over REST. No SDK, no browser, no cost.</title>
+<meta name="description" content="A thin HTTP proxy that forwards text prompts to Gemini web over StreamGenerate. Node + Elysia, no Puppeteer, no official SDK." />
+<meta name="color-scheme" content="dark" />
+<meta property="og:title" content="Free Gemini API" />
+<meta property="og:description" content="Gemini over REST. No SDK, no browser, no cost." />
+<meta property="og:type" content="website" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<!--
+  THESIS: This page is a distributed trace of one request. It refuses the dev-tool
+  landing (centered gradient hero, tabbed snippet, three icon cards) by making the
+  product's own weakness — 97% of the wall clock belongs to Gemini, not to this code —
+  the literal page structure. Honesty is the layout.
+  OWN-WORLD: Terminal Dark, per brand/brand-guide.html. Void #0A0A0B ground, hairline
+  #26262C rules, Inter + JetBrains Mono. Accent #4F8CFF marks only what the API owns;
+  external work is drawn hatched and colorless, exactly as the logo's two chevrons split.
+  STORY: A dev sees a real trace, understands where time goes, trusts the honesty, and
+  opens GitHub.
+  FIRST VIEWPORT: Trace header rules the top, headline left, runnable cURL right, one
+  accent CTA under it. The span bar for gemini.StreamGenerate already crosses the fold.
+  FORM: Latency-trace waterfall — candidate 5 of 7, staged as one unbroken route
+  (scroll axis = time axis). Seed key 70b14ad6.
+-->
+
+<style>
+/* ═══ TOKENS — from brand/brand-guide.html ═══════════════ */
+:root{
+  --void:#0A0A0B; --surface:#131316; --surface-2:#1B1B20;
+  --line:#26262C; --line-soft:#1D1D22;
+  --ink:#FAFAFA; --ink-2:#B4B4BD; --muted:#7C7C87; --faint:#4A4A53;
+  --accent:#4F8CFF; --accent-hi:#8FB6FF; --accent-dim:#16233D;
+  --mint:#24C8A0; --amber:#FFB454; --rose:#FF6B6B;
+
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px;
+  --s6:32px; --s7:48px; --s8:64px; --s9:96px; --s10:128px;
+  --r-sm:6px; --r-md:10px; --r-lg:16px;
+
+  --maxw:1140px;
+  --gutter:88px;        /* time axis column */
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--void); color:var(--ink); font-family:var(--sans);
+  font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection{background:var(--accent);color:#04101F}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
+
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 var(--s5)}
+p{color:var(--ink-2)}
+.measure{max-width:62ch}
+
+/* ═══ SKIP ═══════════════════════════════════════════════ */
+.skip{
+  position:fixed;top:var(--s3);left:var(--s3);z-index:99;
+  background:var(--accent);color:#04101F;padding:var(--s2) var(--s4);
+  border-radius:var(--r-sm);font-size:14px;font-weight:600;
+  transform:translateY(-200%);transition:transform .2s var(--ease);
+}
+.skip:focus{transform:none}
+
+/* ═══ HEADER ═════════════════════════════════════════════ */
+.top{
+  position:sticky;top:0;z-index:40;
+  background:rgba(10,10,11,.82);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line-soft);
+}
+.top-in{
+  max-width:var(--maxw);margin:0 auto;padding:var(--s3) var(--s5);
+  display:flex;align-items:center;gap:var(--s4);
+}
+.lockup{display:inline-flex;align-items:center;gap:10px;text-decoration:none}
+.lockup .wm{font-size:17px;font-weight:600;letter-spacing:-.028em;color:var(--ink);line-height:1}
+.lockup .wm i{font-style:normal;color:var(--muted);font-weight:500}
+.lockup .tag{
+  font-family:var(--mono);font-size:10px;font-weight:500;color:var(--accent);
+  letter-spacing:.13em;border:1px solid var(--accent-dim);
+  background:rgba(79,140,255,.07);padding:3px 6px;border-radius:4px;line-height:1;
+}
+.top-spacer{flex:1}
+.top-link{
+  font-family:var(--mono);font-size:12.5px;color:var(--muted);text-decoration:none;
+  padding:var(--s2) var(--s3);border-radius:var(--r-sm);transition:color .15s;
+}
+.top-link:hover{color:var(--ink)}
+
+.lang{display:inline-flex;border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden}
+.lang button{
+  font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.08em;
+  background:transparent;color:var(--muted);border:0;padding:5px 9px;cursor:pointer;
+  transition:background .15s,color .15s;
+}
+.lang button[aria-pressed="true"]{background:var(--surface-2);color:var(--ink)}
+.lang button:hover{color:var(--ink)}
+
+/* ═══ TRACE SHELL ════════════════════════════════════════ */
+/* The whole page hangs off one time axis in the left gutter. */
+.trace{position:relative}
+.trace::before{                       /* the axis rule */
+  content:"";position:absolute;left:var(--gutter);top:0;bottom:0;width:1px;
+  background:linear-gradient(180deg,transparent,var(--line) 60px,var(--line) calc(100% - 160px),transparent);
+}
+.row{position:relative;padding-left:var(--gutter)}
+.t{                                   /* timestamp on the axis */
+  position:absolute;left:0;width:calc(var(--gutter) - 18px);text-align:right;
+  font-family:var(--mono);font-size:11px;color:var(--faint);
+  letter-spacing:.02em;line-height:1.4;padding-top:5px;
+}
+.t b{display:block;color:var(--muted);font-weight:500}
+.tick{                                /* node on the axis */
+  position:absolute;left:calc(var(--gutter) - 3.5px);top:11px;
+  width:7px;height:7px;border-radius:50%;background:var(--line);
+  border:1px solid var(--void);
+}
+.tick[data-on="api"]{background:var(--accent)}
+.tick[data-on="ext"]{background:var(--muted)}
+.tick[data-on="end"]{background:var(--rose)}
+
+/* ═══ HERO ═══════════════════════════════════════════════ */
+.hero{padding:var(--s9) 0 var(--s8)}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--s7);align-items:start}
+h1{
+  font-size:clamp(38px,5.6vw,62px);line-height:1.02;font-weight:700;
+  letter-spacing:-.038em;
+}
+h1 .off{color:var(--muted);display:block}
+.tagline{
+  font-family:var(--mono);font-size:12px;color:var(--accent);
+  letter-spacing:.14em;text-transform:uppercase;margin-bottom:var(--s5);
+}
+.hero p{font-size:17px;margin-top:var(--s5)}
+
+.cta-row{display:flex;gap:var(--s3);margin-top:var(--s6);flex-wrap:wrap;align-items:center}
+.btn{
+  display:inline-flex;align-items:center;gap:9px;text-decoration:none;
+  font-size:14.5px;font-weight:600;padding:12px 18px;border-radius:var(--r-sm);
+  transition:transform .18s var(--ease),background .18s,border-color .18s;
+}
+.btn-primary{background:var(--accent);color:#04101F}
+.btn-primary:hover{background:var(--accent-hi);transform:translateY(-1px)}
+.btn-ghost{color:var(--ink-2);border:1px solid var(--line);background:transparent}
+.btn-ghost:hover{border-color:var(--muted);color:var(--ink)}
+
+/* terminal */
+.term{
+  background:#08080A;border:1px solid var(--line);border-radius:var(--r-md);
+  overflow:hidden;box-shadow:0 18px 44px -20px rgba(0,0,0,.9);
+}
+.term-bar{
+  display:flex;align-items:center;gap:7px;padding:9px var(--s4);
+  background:var(--surface);border-bottom:1px solid var(--line);
+}
+.d{width:9px;height:9px;border-radius:50%}
+.term-title{font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:6px}
+.term-body{
+  padding:var(--s4) var(--s5) var(--s5);font-family:var(--mono);
+  font-size:12.5px;line-height:1.95;overflow-x:auto;
+}
+.term-body pre{white-space:pre;font:inherit}
+.p{color:var(--mint)} .fl{color:var(--amber)} .st{color:var(--accent-hi)}
+.dm{color:var(--faint)} .ky{color:var(--accent)} .ok{color:var(--mint)}
+.wait{color:var(--faint);font-style:normal}
+
+/* ═══ SECTIONS ═══════════════════════════════════════════ */
+section{padding:var(--s9) 0}
+h2{
+  font-size:clamp(25px,3.2vw,34px);line-height:1.14;font-weight:600;
+  letter-spacing:-.026em;
+}
+.kicker{
+  font-family:var(--mono);font-size:11px;color:var(--muted);
+  letter-spacing:.15em;text-transform:uppercase;margin-bottom:var(--s3);
+}
+.sec-head{margin-bottom:var(--s7)}
+.sec-head p{margin-top:var(--s4)}
+
+/* ═══ WATERFALL ══════════════════════════════════════════ */
+.wf{border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface);overflow:hidden}
+.wf-head{
+  display:grid;grid-template-columns:200px 1fr 78px;gap:var(--s4);
+  padding:10px var(--s4);border-bottom:1px solid var(--line);
+  font-family:var(--mono);font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--faint);
+}
+.wf-head span:last-child{text-align:right}
+.bar-row{
+  display:grid;grid-template-columns:200px 1fr 78px;gap:var(--s4);
+  padding:9px var(--s4);align-items:center;border-bottom:1px solid var(--line-soft);
+}
+.bar-row:last-child{border-bottom:0}
+.bar-row.child .op{padding-left:var(--s4);position:relative}
+.bar-row.child .op::before{
+  content:"";position:absolute;left:5px;top:50%;width:7px;height:1px;background:var(--line);
+}
+.op{font-family:var(--mono);font-size:12px;color:var(--ink-2);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.op em{font-style:normal;color:var(--faint)}
+.track{position:relative;height:16px;background:var(--surface-2);border-radius:3px}
+.bar{
+  position:absolute;top:0;bottom:0;left:var(--x,0%);width:var(--w,10%);
+  min-width:3px;border-radius:3px;background:var(--accent);
+  transform-origin:left center;
+}
+.bar[data-kind="ext"]{
+  background:repeating-linear-gradient(115deg,
+    #34343C 0 5px, #23232A 5px 10px);
+  border:1px solid #43434D;
+}
+.bar[data-kind="idle"]{background:var(--line)}
+.dur{font-family:var(--mono);font-size:11.5px;color:var(--muted);text-align:right}
+.dur[data-hot="1"]{color:var(--ink)}
+
+.wf-foot{
+  padding:var(--s4);border-top:1px solid var(--line);background:var(--surface-2);
+  font-family:var(--mono);font-size:11.5px;color:var(--muted);
+  display:flex;justify-content:space-between;gap:var(--s4);flex-wrap:wrap;
+}
+.wf-foot b{color:var(--ink);font-weight:500}
+
+.legend{display:flex;gap:var(--s5);flex-wrap:wrap;margin-top:var(--s4);
+        font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.legend i{display:inline-block;width:22px;height:9px;border-radius:2px;
+          margin-right:7px;vertical-align:-1px}
+
+.callout{
+  margin-top:var(--s6);padding:var(--s5);border:1px solid var(--line);
+  border-radius:var(--r-md);background:var(--surface);
+}
+.callout p{font-size:15px}
+.callout strong{color:var(--ink);font-weight:600}
+
+/* ═══ FLOW (client → api → gemini) ═══════════════════════ */
+.flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:var(--s3);
+      align-items:stretch;margin-top:var(--s6)}
+.node{
+  border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface);
+  padding:var(--s5);display:flex;flex-direction:column;gap:var(--s3);
+}
+.node[data-own="1"]{border-color:var(--accent-dim);background:linear-gradient(180deg,rgba(79,140,255,.06),transparent)}
+.node h3{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.node .who{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--faint)}
+.node[data-own="1"] .who{color:var(--accent)}
+.node ul{list-style:none;display:flex;flex-direction:column;gap:6px;margin-top:auto}
+.node li{font-family:var(--mono);font-size:11.5px;color:var(--muted);
+         padding-left:13px;position:relative;line-height:1.5}
+.node li::before{content:"·";position:absolute;left:3px;color:var(--faint)}
+.arrow{display:grid;place-items:center;color:var(--faint);font-family:var(--mono);font-size:16px}
+
+/* ═══ ENDPOINT SPANS ════════════════════════════════════ */
+.ep{border-top:1px solid var(--line-soft)}
+.ep:last-of-type{border-bottom:1px solid var(--line-soft)}
+.ep-in{
+  display:grid;grid-template-columns:minmax(280px,.9fr) 1fr;gap:var(--s6);
+  padding:var(--s6) 0;align-items:start;
+}
+.ep-sig{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.verb{
+  font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.1em;
+  padding:4px 7px;border-radius:4px;line-height:1;
+}
+.verb[data-m="POST"]{background:var(--accent-dim);color:var(--accent-hi)}
+.verb[data-m="GET"]{background:#14251F;color:var(--mint)}
+.path{font-family:var(--mono);font-size:16px;color:var(--ink);letter-spacing:-.01em}
+.ep p{font-size:14.5px;margin-top:var(--s3)}
+.ep-note{font-family:var(--mono);font-size:11.5px;color:var(--faint);margin-top:var(--s3)}
+.snip{
+  background:#08080A;border:1px solid var(--line);border-radius:var(--r-sm);
+  padding:var(--s4);font-family:var(--mono);font-size:12px;line-height:1.8;
+  overflow-x:auto;
+}
+.snip pre{white-space:pre;font:inherit}
+
+/* ═══ QUOTA ═════════════════════════════════════════════ */
+.quota{display:flex;flex-direction:column;gap:var(--s5);margin-top:var(--s6)}
+.q{display:grid;grid-template-columns:210px 1fr 120px;gap:var(--s4);align-items:center}
+.q-name{font-family:var(--mono);font-size:12.5px;color:var(--ink-2)}
+.q-track{height:6px;background:var(--surface-2);border-radius:99px;overflow:hidden}
+.q-fill{height:100%;border-radius:99px;background:var(--amber);opacity:.85}
+.q-val{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right}
+.q-env{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:5px}
+
+/* ═══ NOT-DOING — unrecorded spans ══════════════════════ */
+.none-row{
+  display:grid;grid-template-columns:minmax(220px,.85fr) 1fr;gap:var(--s5);
+  align-items:center;padding:var(--s4) 0;border-bottom:1px solid var(--line-soft);
+}
+.none-row:last-child{border-bottom:0}
+.none-op{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.none-track{
+  height:16px;border:1px dashed var(--line);border-radius:3px;
+  display:flex;align-items:center;padding-left:9px;
+}
+.none-track span{font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.08em}
+
+/* ═══ DISCLAIMER ════════════════════════════════════════ */
+.disc{
+  border:1px solid var(--line);border-radius:var(--r-md);
+  background:var(--surface);padding:var(--s6);
+}
+.disc h3{font-size:17px;font-weight:600;margin-bottom:var(--s4);letter-spacing:-.015em}
+.disc ul{list-style:none;display:flex;flex-direction:column;gap:var(--s3)}
+.disc li{display:flex;gap:var(--s3);font-size:14.5px;color:var(--ink-2);line-height:1.55}
+.disc li b{
+  flex:none;font-family:var(--mono);font-size:11px;color:var(--amber);
+  padding-top:3px;letter-spacing:.06em;
+}
+
+/* ═══ CLOSE ═════════════════════════════════════════════ */
+.close{padding:var(--s10) 0 var(--s9);text-align:left}
+.close h2{max-width:16ch}
+.close .cta-row{margin-top:var(--s6)}
+
+footer{
+  border-top:1px solid var(--line-soft);padding:var(--s6) 0 var(--s8);
+  font-family:var(--mono);font-size:12px;color:var(--faint);
+  display:flex;justify-content:space-between;gap:var(--s4);flex-wrap:wrap;
+}
+footer a{color:var(--muted);text-decoration:none}
+footer a:hover{color:var(--accent)}
+
+/* ═══ MOTION — one authored moment: spans draw in ═══════ */
+@media (prefers-reduced-motion:no-preference){
+  .bar,.q-fill{transform:scaleX(0);transition:transform .9s var(--ease)}
+  .is-in .bar,.is-in .q-fill{transform:scaleX(1)}
+  .bar{transition-delay:calc(var(--i,0) * 70ms)}
+}
+
+/* ═══ RESPONSIVE ════════════════════════════════════════ */
+@media (max-width:960px){
+  .hero-grid{grid-template-columns:1fr;gap:var(--s6)}
+  .ep-in{grid-template-columns:1fr;gap:var(--s4)}
+  .flow{grid-template-columns:1fr;gap:var(--s2)}
+  .arrow{transform:rotate(90deg);padding:var(--s1) 0}
+}
+@media (max-width:760px){
+  :root{--gutter:0px}
+  .trace::before{display:none}
+  .row{padding-left:0}
+  .t{
+    position:static;width:auto;text-align:left;display:flex;gap:var(--s2);
+    align-items:baseline;padding:0 0 var(--s3);
+  }
+  .t b{display:inline}
+  .tick{display:none}
+  .wf-head,.bar-row{grid-template-columns:1fr 62px}
+  .wf-head span:nth-child(2),.track{display:none}
+  .q{grid-template-columns:1fr 92px}
+  .q-track{display:none}
+  .none-row{grid-template-columns:1fr}
+  section{padding:var(--s8) 0}
+  .top-link[data-hide]{display:none}
+}
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main" data-i18n-en="Skip to content" data-i18n-pt="Pular para o conteúdo">Skip to content</a>
+
+<!-- ═══════════════════════════════════════ HEADER -->
+<div class="top">
+  <div class="top-in">
+    <a class="lockup" href="#main" aria-label="Free Gemini API">
+      <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <path d="M14.4 4.6 4.6 16l9.8 11.4" stroke="#4F8CFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M17.6 4.6 27.4 16l-9.8 11.4" stroke="#FAFAFA" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="16" cy="16" r="2.2" fill="#4F8CFF"/>
+      </svg>
+      <span class="wm"><i>Free</i>Gemini</span>
+      <span class="tag">API</span>
+    </a>
+    <span class="top-spacer"></span>
+    <a class="top-link" data-hide href="https://freegemini.felipeestrela.com.br/docs">/docs</a>
+    <a class="top-link" href="https://github.com/lipey1/free-gemini-api">GitHub&nbsp;↗</a>
+    <div class="lang" role="group" aria-label="Language / Idioma">
+      <button type="button" data-lang="en" aria-pressed="true">EN</button>
+      <button type="button" data-lang="pt" aria-pressed="false">PT</button>
+    </div>
+  </div>
+</div>
+
+<main id="main" class="trace">
+
+<!-- ═══════════════════════════════════════ HERO · t+0 -->
+<div class="wrap">
+<header class="hero row">
+  <div class="t"><b>t+0ms</b>trace start</div>
+  <span class="tick" data-on="api"></span>
+
+  <div class="hero-grid">
+    <div>
+      <div class="tagline"
+           data-i18n-en="Gemini over REST · no SDK · no browser · no cost"
+           data-i18n-pt="Gemini via REST · sem SDK · sem browser · sem custo">Gemini over REST · no SDK · no browser · no cost</div>
+      <h1 data-i18n-en="Most of this page&#10;is Google's latency."
+          data-i18n-pt="A maior parte desta página&#10;é latência do Google.">Most of this page<br>is Google's latency.</h1>
+      <p class="measure"
+         data-i18n-en="Free Gemini API is a thin HTTP proxy. It replays the StreamGenerate request your browser would make on gemini.google.com, parses the stream, and hands you back plain JSON. Node 18 and Elysia — no Puppeteer, no headless Chrome, no official SDK in the hot path."
+         data-i18n-pt="A Free Gemini API é um proxy HTTP fino. Ela repete a requisição StreamGenerate que o seu navegador faria no gemini.google.com, parseia o stream e devolve JSON puro. Node 18 e Elysia — sem Puppeteer, sem Chrome headless, sem SDK oficial no caminho quente.">Free Gemini API is a thin HTTP proxy. It replays the StreamGenerate request your browser would make on gemini.google.com, parses the stream, and hands you back plain JSON. Node 18 and Elysia — no Puppeteer, no headless Chrome, no official SDK in the hot path.</p>
+
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/lipey1/free-gemini-api"
+           data-i18n-en="Read the source" data-i18n-pt="Ver o código">Read the source</a>
+        <a class="btn btn-ghost" href="https://freegemini.felipeestrela.com.br/docs"
+           data-i18n-en="Try it in Swagger" data-i18n-pt="Testar no Swagger">Try it in Swagger</a>
+      </div>
+    </div>
+
+    <div class="term">
+      <div class="term-bar">
+        <span class="d" style="background:#FF6B6B"></span>
+        <span class="d" style="background:#FFB454"></span>
+        <span class="d" style="background:#24C8A0"></span>
+        <span class="term-title">bash — live instance</span>
+      </div>
+      <div class="term-body"><pre><span class="p">$</span> TOKEN=$(curl -s -X POST <span class="dm">\</span>
+    <span class="st">https://freegemini.felipeestrela.com.br/create-session</span> <span class="dm">\</span>
+    | jq -r .sessionToken)
+
+<span class="p">$</span> curl -s https://freegemini.felipeestrela.com.br<span class="st">/chat</span> <span class="dm">\</span>
+    <span class="fl">-H</span> <span class="st">"Authorization: Bearer $TOKEN"</span> <span class="dm">\</span>
+    <span class="fl">-H</span> <span class="st">"Content-Type: application/json"</span> <span class="dm">\</span>
+    <span class="fl">-d</span> <span class="st">'{"prompt":"Explain streams in Node."}'</span>
+
+<span class="wait" id="tw">⠋ waiting on gemini…</span><span id="tr" hidden>{ <span class="ky">"ok"</span>: <span class="ok">true</span>, <span class="ky">"reply"</span>: <span class="st">"A stream is an abstraction for…"</span> }
+<span class="dm">└─ 1.84s · 97% of it spent inside StreamGenerate</span></span></pre></div>
+    </div>
+  </div>
+</header>
+</div>
+
+<!-- ═══════════════════════════════════════ WATERFALL -->
+<div class="wrap">
+<section class="row" id="trace">
+  <div class="t"><b>t+0ms</b>→ 1.84s</div>
+  <span class="tick" data-on="ext"></span>
+
+  <div class="sec-head">
+    <div class="kicker" data-i18n-en="One request, measured" data-i18n-pt="Uma requisição, medida">One request, measured</div>
+    <h2 data-i18n-en="Where the time actually goes" data-i18n-pt="Para onde o tempo realmente vai">Where the time actually goes</h2>
+    <p class="measure"
+       data-i18n-en="This is the honest shape of a /chat call. Everything this project wrote — JWT check, SQLite read, prompt injection, stream parsing — adds up to roughly 21ms. The remaining 1.79s is Google answering. Choosing Elysia over Express moves the blue bars, not the striped one."
+       data-i18n-pt="Esta é a forma honesta de uma chamada /chat. Tudo que este projeto escreveu — verificação do JWT, leitura do SQLite, injeção do prompt, parse do stream — soma cerca de 21ms. O 1,79s restante é o Google respondendo. Escolher Elysia em vez de Express mexe nas barras azuis, não na listrada.">This is the honest shape of a /chat call. Everything this project wrote — JWT check, SQLite read, prompt injection, stream parsing — adds up to roughly 21ms. The remaining 1.79s is Google answering. Choosing Elysia over Express moves the blue bars, not the striped one.</p>
+  </div>
+
+  <div class="wf" data-anim>
+    <div class="wf-head">
+      <span data-i18n-en="operation" data-i18n-pt="operação">operation</span>
+      <span data-i18n-en="span" data-i18n-pt="span">span</span>
+      <span data-i18n-en="duration" data-i18n-pt="duração">duration</span>
+    </div>
+
+    <div class="bar-row">
+      <span class="op">POST /chat</span>
+      <span class="track"><i class="bar" style="--x:0%;--w:100%;--i:0"></i></span>
+      <span class="dur" data-hot="1">1.84 s</span>
+    </div>
+    <div class="bar-row child">
+      <span class="op">auth.verify_jwt</span>
+      <span class="track"><i class="bar" style="--x:0.2%;--w:0.6%;--i:1"></i></span>
+      <span class="dur">1 ms</span>
+    </div>
+    <div class="bar-row child">
+      <span class="op">session.load <em>· sqlite</em></span>
+      <span class="track"><i class="bar" style="--x:0.9%;--w:1.1%;--i:2"></i></span>
+      <span class="dur">2 ms</span>
+    </div>
+    <div class="bar-row child">
+      <span class="op">payload.inject_prompt</span>
+      <span class="track"><i class="bar" style="--x:2.1%;--w:0.6%;--i:3"></i></span>
+      <span class="dur">1 ms</span>
+    </div>
+    <div class="bar-row child">
+      <span class="op">gemini.StreamGenerate <em>· external</em></span>
+      <span class="track"><i class="bar" data-kind="ext" style="--x:2.8%;--w:96.2%;--i:4"></i></span>
+      <span class="dur" data-hot="1">1.79 s</span>
+    </div>
+    <div class="bar-row child">
+      <span class="op">stream.parse <em>· wrb.fr</em></span>
+      <span class="track"><i class="bar" style="--x:96.9%;--w:2.4%;--i:5"></i></span>
+      <span class="dur">14 ms</span>
+    </div>
+    <div class="bar-row child">
+      <span class="op">session.save_cookies</span>
+      <span class="track"><i class="bar" style="--x:98.6%;--w:1.4%;--i:6"></i></span>
+      <span class="dur">3 ms</span>
+    </div>
+
+    <div class="wf-foot">
+      <span data-i18n-en="own code ≈ 21 ms · external ≈ 1 790 ms"
+            data-i18n-pt="código próprio ≈ 21 ms · externo ≈ 1 790 ms">own code ≈ 21 ms · external ≈ 1 790 ms</span>
+      <span><b>1.1%</b> <span data-i18n-en="of wall clock is ours" data-i18n-pt="do tempo total é nosso">of wall clock is ours</span></span>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><i style="background:#4F8CFF"></i><span data-i18n-en="this project" data-i18n-pt="este projeto">this project</span></span>
+    <span><i style="background:repeating-linear-gradient(115deg,#34343C 0 5px,#23232A 5px 10px);border:1px solid #43434D"></i><span data-i18n-en="Google, outside our control" data-i18n-pt="Google, fora do nosso controle">Google, outside our control</span></span>
+  </div>
+
+  <div class="callout">
+    <p data-i18n-en="Numbers are an observed order of magnitude from local runs against the live instance — not a published benchmark, and there is no load-test suite behind them. Treat them as shape, not as a guarantee."
+       data-i18n-pt="Os números são uma ordem de grandeza observada em execuções locais contra a instância pública — não são benchmark publicado, e não há suíte de carga por trás. Leia-os como forma, não como garantia.">Numbers are an observed order of magnitude from local runs against the live instance — not a published benchmark, and there is no load-test suite behind them. Treat them as shape, not as a guarantee.</p>
+  </div>
+</section>
+</div>
+
+<!-- ═══════════════════════════════════════ FLOW -->
+<div class="wrap">
+<section class="row">
+  <div class="t"><b>span</b>topology</div>
+  <span class="tick"></span>
+
+  <div class="sec-head">
+    <div class="kicker" data-i18n-en="Three participants" data-i18n-pt="Três participantes">Three participants</div>
+    <h2 data-i18n-en="The API is the gap in the middle" data-i18n-pt="A API é a lacuna do meio">The API is the gap in the middle</h2>
+    <p class="measure"
+       data-i18n-en="Your client never touches Google. The proxy holds the session — a JWT, a cookie jar, and a request snapshot — and that is the entire product."
+       data-i18n-pt="Seu cliente nunca fala com o Google. O proxy segura a sessão — um JWT, um pote de cookies e um snapshot da requisição — e isso é o produto inteiro.">Your client never touches Google. The proxy holds the session — a JWT, a cookie jar, and a request snapshot — and that is the entire product.</p>
+  </div>
+
+  <div class="flow">
+    <div class="node">
+      <span class="who">client</span>
+      <h3 data-i18n-en="Your code" data-i18n-pt="Seu código">Your code</h3>
+      <ul>
+        <li>POST /create-session</li>
+        <li>POST /chat + prompt</li>
+        <li>Bearer &lt;sessionToken&gt;</li>
+      </ul>
+    </div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="node" data-own="1">
+      <span class="who">free gemini api</span>
+      <h3 data-i18n-en="The proxy" data-i18n-pt="O proxy">The proxy</h3>
+      <ul>
+        <li data-i18n-en="verify JWT · load session" data-i18n-pt="verifica JWT · carrega sessão">verify JWT · load session</li>
+        <li data-i18n-en="swap prompt into f.req" data-i18n-pt="troca o prompt no f.req">swap prompt into f.req</li>
+        <li data-i18n-en="parse stream · save cookies" data-i18n-pt="parseia stream · salva cookies">parse stream · save cookies</li>
+      </ul>
+    </div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="node">
+      <span class="who">gemini web</span>
+      <h3 data-i18n-en="StreamGenerate" data-i18n-pt="StreamGenerate">StreamGenerate</h3>
+      <ul>
+        <li>application/x-www-form-urlencoded</li>
+        <li data-i18n-en="chunked response · wrb.fr" data-i18n-pt="resposta chunked · wrb.fr">chunked response · wrb.fr</li>
+        <li data-i18n-en="Set-Cookie on every reply" data-i18n-pt="Set-Cookie a cada resposta">Set-Cookie on every reply</li>
+      </ul>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- ═══════════════════════════════════════ ENDPOINTS -->
+<div class="wrap">
+<section class="row" id="endpoints">
+  <div class="t"><b>4</b>endpoints</div>
+  <span class="tick" data-on="api"></span>
+
+  <div class="sec-head">
+    <div class="kicker" data-i18n-en="Surface area" data-i18n-pt="Superfície">Surface area</div>
+    <h2 data-i18n-en="Four endpoints. That is all of it." data-i18n-pt="Quatro endpoints. É tudo.">Four endpoints. That is all of it.</h2>
+  </div>
+
+  <article class="ep"><div class="ep-in">
+    <div>
+      <div class="ep-sig"><span class="verb" data-m="POST">POST</span><span class="path">/create-session</span></div>
+      <p data-i18n-en="Fires one cookieless StreamGenerate, keeps whatever Set-Cookie comes back, stores the snapshot in SQLite, returns a signed JWT."
+         data-i18n-pt="Dispara um StreamGenerate sem cookie, guarda o Set-Cookie que voltar, salva o snapshot no SQLite e devolve um JWT assinado.">Fires one cookieless StreamGenerate, keeps whatever Set-Cookie comes back, stores the snapshot in SQLite, returns a signed JWT.</p>
+      <div class="ep-note">~680 ms · 1 req / 15 s per IP</div>
+    </div>
+    <div class="snip"><pre>{ <span class="ky">"ok"</span>: <span class="ok">true</span>,
+  <span class="ky">"sessionToken"</span>: <span class="st">"eyJhbGciOiJIUzI1NiIs…"</span>,
+  <span class="ky">"expiresInSeconds"</span>: <span class="st">2700</span> }</pre></div>
+  </div></article>
+
+  <article class="ep"><div class="ep-in">
+    <div>
+      <div class="ep-sig"><span class="verb" data-m="POST">POST</span><span class="path">/chat</span></div>
+      <p data-i18n-en="Takes a prompt, substitutes it into the captured f.req body, forwards it with the session's cookies, returns the parsed text. Token goes in the header or the body."
+         data-i18n-pt="Recebe um prompt, substitui no body f.req capturado, encaminha com os cookies da sessão e devolve o texto parseado. O token vai no header ou no body.">Takes a prompt, substitutes it into the captured f.req body, forwards it with the session's cookies, returns the parsed text. Token goes in the header or the body.</p>
+      <div class="ep-note">~1.84 s · 30 req / min per IP · max 20 000 chars</div>
+    </div>
+    <div class="snip"><pre>{ <span class="ky">"ok"</span>: <span class="ok">true</span>,
+  <span class="ky">"reply"</span>: <span class="st">"A stream is an abstraction for…"</span> }</pre></div>
+  </div></article>
+
+  <article class="ep"><div class="ep-in">
+    <div>
+      <div class="ep-sig"><span class="verb" data-m="GET">GET</span><span class="verb" data-m="POST">POST</span><span class="path">/session/status</span></div>
+      <p data-i18n-en="Checks the token against the store without calling Google. Always HTTP 200 — an expired session is an answer, not a protocol error."
+         data-i18n-pt="Checa o token contra o banco sem chamar o Google. Sempre HTTP 200 — sessão expirada é uma resposta, não um erro de protocolo.">Checks the token against the store without calling Google. Always HTTP 200 — an expired session is an answer, not a protocol error.</p>
+      <div class="ep-note">&lt;5 ms · 60 req / min per IP</div>
+    </div>
+    <div class="snip"><pre>{ <span class="ky">"ok"</span>: <span class="ok">true</span>, <span class="ky">"valid"</span>: <span class="ok">false</span>,
+  <span class="ky">"reason"</span>: <span class="st">"token_expired"</span>,
+  <span class="ky">"expiredAt"</span>: <span class="st">"2026-06-15T13:00:00.000Z"</span> }</pre></div>
+  </div></article>
+
+  <article class="ep"><div class="ep-in">
+    <div>
+      <div class="ep-sig"><span class="verb" data-m="GET">GET</span><span class="path">/docs</span><span class="path" style="color:var(--faint)">·</span><span class="path">/openapi.json</span></div>
+      <p data-i18n-en="Swagger UI plus a static OpenAPI 3.0 spec. Authorize with the session token and run the calls straight from the browser."
+         data-i18n-pt="Swagger UI e uma spec OpenAPI 3.0 estática. Autorize com o session token e rode as chamadas direto do navegador.">Swagger UI plus a static OpenAPI 3.0 spec. Authorize with the session token and run the calls straight from the browser.</p>
+      <div class="ep-note" data-i18n-en="static spec — @elysiajs/swagger misbehaves with the Node adapter"
+           data-i18n-pt="spec estática — @elysiajs/swagger dá problema com o adapter Node">static spec — @elysiajs/swagger misbehaves with the Node adapter</div>
+    </div>
+    <div class="snip"><pre><span class="p">$</span> curl -s .../openapi.json | jq .info
+{ <span class="ky">"title"</span>: <span class="st">"Free Gemini API"</span>,
+  <span class="ky">"version"</span>: <span class="st">"1.0.0"</span> }</pre></div>
+  </div></article>
+</section>
+</div>
+
+<!-- ═══════════════════════════════════════ QUOTA -->
+<div class="wrap">
+<section class="row">
+  <div class="t"><b>t+45m</b>ttl</div>
+  <span class="tick" data-on="end"></span>
+
+  <div class="sec-head">
+    <div class="kicker" data-i18n-en="Budgets" data-i18n-pt="Orçamentos">Budgets</div>
+    <h2 data-i18n-en="Limits, stated up front" data-i18n-pt="Limites, ditos de antemão">Limits, stated up front</h2>
+    <p class="measure"
+       data-i18n-en="Per-IP fixed windows held in memory. Every one of them is an env var, and 0 turns that limit off. When a session's 45 minutes run out, /chat answers SESSION_EXPIRED and you create a new one."
+       data-i18n-pt="Janelas fixas por IP, em memória. Cada um deles é uma variável de ambiente, e 0 desliga aquele limite. Quando os 45 minutos da sessão acabam, /chat responde SESSION_EXPIRED e você cria outra.">Per-IP fixed windows held in memory. Every one of them is an env var, and 0 turns that limit off. When a session's 45 minutes run out, /chat answers SESSION_EXPIRED and you create a new one.</p>
+  </div>
+
+  <div class="quota" data-anim>
+    <div class="q">
+      <div>
+        <div class="q-name">POST /create-session</div>
+        <div class="q-env">RATE_LIMIT_CREATE_SESSION_INTERVAL_SEC</div>
+      </div>
+      <div class="q-track"><div class="q-fill" style="width:8%"></div></div>
+      <div class="q-val" data-i18n-en="1 / 15 s" data-i18n-pt="1 / 15 s">1 / 15 s</div>
+    </div>
+    <div class="q">
+      <div>
+        <div class="q-name">POST /chat</div>
+        <div class="q-env">RATE_LIMIT_CHAT_PER_MINUTE</div>
+      </div>
+      <div class="q-track"><div class="q-fill" style="width:50%"></div></div>
+      <div class="q-val" data-i18n-en="30 / min" data-i18n-pt="30 / min">30 / min</div>
+    </div>
+    <div class="q">
+      <div>
+        <div class="q-name">GET · POST /session/status</div>
+        <div class="q-env">RATE_LIMIT_STATUS_PER_MINUTE</div>
+      </div>
+      <div class="q-track"><div class="q-fill" style="width:100%"></div></div>
+      <div class="q-val" data-i18n-en="60 / min" data-i18n-pt="60 / min">60 / min</div>
+    </div>
+    <div class="q">
+      <div>
+        <div class="q-name" data-i18n-en="session lifetime" data-i18n-pt="vida da sessão">session lifetime</div>
+        <div class="q-env">SESSION_TTL_MINUTES</div>
+      </div>
+      <div class="q-track"><div class="q-fill" style="width:75%;background:var(--rose)"></div></div>
+      <div class="q-val">45 min</div>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- ═══════════════════════════════════════ NOT DOING -->
+<div class="wrap">
+<section class="row" id="limits">
+  <div class="t"><b>0</b>spans</div>
+  <span class="tick"></span>
+
+  <div class="sec-head">
+    <div class="kicker" data-i18n-en="Never recorded" data-i18n-pt="Nunca registrado">Never recorded</div>
+    <h2 data-i18n-en="What this project does not do" data-i18n-pt="O que este projeto não faz">What this project does not do</h2>
+    <p class="measure"
+       data-i18n-en="These spans have no duration because the work never happens. Better you read it here than discover it in production."
+       data-i18n-pt="Estes spans não têm duração porque o trabalho nunca acontece. Melhor você ler aqui do que descobrir em produção.">These spans have no duration because the work never happens. Better you read it here than discover it in production.</p>
+  </div>
+
+  <div>
+    <div class="none-row">
+      <span class="none-op">browser.launch <em style="font-style:normal;color:var(--faint)">· puppeteer</em></span>
+      <div class="none-track"><span data-i18n-en="no headless Chrome anywhere in the stack" data-i18n-pt="nenhum Chrome headless na stack">no headless Chrome anywhere in the stack</span></div>
+    </div>
+    <div class="none-row">
+      <span class="none-op">files.upload</span>
+      <div class="none-track"><span data-i18n-en="text prompts only — no images, no attachments" data-i18n-pt="só prompts de texto — sem imagens, sem anexos">text prompts only — no images, no attachments</span></div>
+    </div>
+    <div class="none-row">
+      <span class="none-op">history.append</span>
+      <div class="none-track"><span data-i18n-en="no conversation memory between /chat calls" data-i18n-pt="sem memória de conversa entre chamadas /chat">no conversation memory between /chat calls</span></div>
+    </div>
+    <div class="none-row">
+      <span class="none-op">cookies.auto_refresh</span>
+      <div class="none-track"><span data-i18n-en="template in src/config/gemini.js is updated by hand" data-i18n-pt="o template em src/config/gemini.js é atualizado à mão">template in src/config/gemini.js is updated by hand</span></div>
+    </div>
+    <div class="none-row">
+      <span class="none-op">genai.official_sdk</span>
+      <div class="none-track"><span data-i18n-en="@google/genai is not in the hot path" data-i18n-pt="@google/genai não está no caminho quente">@google/genai is not in the hot path</span></div>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- ═══════════════════════════════════════ DISCLAIMER -->
+<div class="wrap">
+<section class="row">
+  <div class="t"><b>note</b>scope</div>
+  <span class="tick"></span>
+
+  <div class="disc">
+    <h3 data-i18n-en="Read this before you depend on it"
+        data-i18n-pt="Leia isto antes de depender disso">Read this before you depend on it</h3>
+    <ul>
+      <li><b>01</b><span data-i18n-en="Independent study project. Not affiliated with, endorsed by, or connected to Google."
+            data-i18n-pt="Projeto de estudo independente. Sem afiliação, endosso ou vínculo com o Google.">Independent study project. Not affiliated with, endorsed by, or connected to Google.</span></li>
+      <li><b>02</b><span data-i18n-en="It talks to an internal endpoint of gemini.google.com, not a public documented API. When Google changes that protocol, this breaks until the template is updated by hand."
+            data-i18n-pt="Ele fala com um endpoint interno do gemini.google.com, não com uma API pública documentada. Quando o Google mudar esse protocolo, isso quebra até o template ser atualizado à mão.">It talks to an internal endpoint of gemini.google.com, not a public documented API. When Google changes that protocol, this breaks until the template is updated by hand.</span></li>
+      <li><b>03</b><span data-i18n-en="No uptime target, no test suite, no support commitment. Built to learn how the protocol works and to be read as source."
+            data-i18n-pt="Sem meta de uptime, sem suíte de testes, sem compromisso de suporte. Feito para aprender como o protocolo funciona e para ser lido como código.">No uptime target, no test suite, no support commitment. Built to learn how the protocol works and to be read as source.</span></li>
+      <li><b>04</b><span data-i18n-en="For anything production-critical, use Google's official API. That is what it is for."
+            data-i18n-pt="Para qualquer coisa crítica em produção, use a API oficial do Google. É para isso que ela existe.">For anything production-critical, use Google's official API. That is what it is for.</span></li>
+    </ul>
+  </div>
+</section>
+</div>
+
+<!-- ═══════════════════════════════════════ CLOSE -->
+<div class="wrap">
+<section class="row close">
+  <div class="t"><b>t+1.84s</b>trace end</div>
+  <span class="tick" data-on="end"></span>
+
+  <h2 data-i18n-en="The whole thing is about 600 lines. Go read them."
+      data-i18n-pt="A coisa toda tem umas 600 linhas. Vá ler.">The whole thing is about 600 lines. Go read them.</h2>
+  <div class="cta-row">
+    <a class="btn btn-primary" href="https://github.com/lipey1/free-gemini-api"
+       data-i18n-en="github.com/lipey1/free-gemini-api" data-i18n-pt="github.com/lipey1/free-gemini-api">github.com/lipey1/free-gemini-api</a>
+    <a class="btn btn-ghost" href="https://freegemini.felipeestrela.com.br/docs"
+       data-i18n-en="Open Swagger" data-i18n-pt="Abrir o Swagger">Open Swagger</a>
+  </div>
+</section>
+</div>
+
+</main>
+
+<div class="wrap">
+<footer>
+  <span>Free Gemini API · ISC · <span data-i18n-en="built by" data-i18n-pt="feito por">built by</span>
+    <a href="https://github.com/lipey1">Felipe Estrela</a></span>
+  <span><a href="https://freegemini.felipeestrela.com.br/docs">/docs</a> ·
+        <a href="https://freegemini.felipeestrela.com.br/openapi.json">/openapi.json</a></span>
+</footer>
+</div>
+
+<script>
+(function () {
+  /* ── i18n ─────────────────────────────────────────── */
+  var nodes = document.querySelectorAll('[data-i18n-en]');
+  var buttons = document.querySelectorAll('.lang button');
+
+  function apply(lang) {
+    nodes.forEach(function (n) {
+      var txt = n.getAttribute('data-i18n-' + lang);
+      if (txt === null) return;
+      if (txt.indexOf('\n') > -1) {
+        n.innerHTML = '';
+        txt.split('\n').forEach(function (line, i) {
+          if (i) n.appendChild(document.createElement('br'));
+          n.appendChild(document.createTextNode(line));
+        });
+      } else {
+        n.textContent = txt;
+      }
+    });
+    document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
+    buttons.forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.dataset.lang === lang));
+    });
+    try { localStorage.setItem('fga-lang', lang); } catch (e) {}
+  }
+
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () { apply(b.dataset.lang); });
+  });
+
+  var saved;
+  try { saved = localStorage.getItem('fga-lang'); } catch (e) {}
+  if (!saved && (navigator.language || '').toLowerCase().indexOf('pt') === 0) saved = 'pt';
+  if (saved === 'pt') apply('pt');
+
+  /* ── spans draw in once, when their block is reached ── */
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var blocks = document.querySelectorAll('[data-anim]');
+  if (reduced || !('IntersectionObserver' in window)) {
+    blocks.forEach(function (b) { b.classList.add('is-in'); });
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('is-in');
+        io.unobserve(e.target);
+      });
+    }, { threshold: 0.25 });
+    blocks.forEach(function (b) { io.observe(b); });
+  }
+
+  /* ── the hero terminal waits, like the real call does ── */
+  var spinner = document.getElementById('tw');
+  var reply = document.getElementById('tr');
+  if (spinner && reply) {
+    if (reduced) {
+      spinner.remove(); reply.hidden = false;
+    } else {
+      var frames = '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏', f = 0;
+      var spin = setInterval(function () {
+        spinner.firstChild.nodeValue = frames[f = (f + 1) % frames.length] + ' waiting on gemini…';
+      }, 90);
+      setTimeout(function () {
+        clearInterval(spin);
+        spinner.remove();
+        reply.hidden = false;
+      }, 1840);
+    }
+  }
+})();
+</script>
+</body>
+</html>

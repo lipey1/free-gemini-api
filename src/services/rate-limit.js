@@ -17,12 +17,32 @@ const STATUS_PER_MINUTE = parsePositiveInt(
 );
 const WINDOW_MS = 60_000;
 
+/* Buckets are keyed per IP, so the map grows with the audience. Evict expired
+   entries periodically or a long-running process leaks one entry per visitor. */
+const EVICT_EVERY_MS = 5 * 60_000;
+let lastEviction = Date.now();
+
+function evictExpired(now, windowMs) {
+  if (now - lastEviction < EVICT_EVERY_MS) return;
+  lastEviction = now;
+  for (const [key, entry] of buckets) {
+    if (now - entry.windowStart >= Math.max(windowMs, WINDOW_MS)) buckets.delete(key);
+  }
+}
+
 function checkRateLimit(key, maxRequests, windowMs) {
   if (!maxRequests) {
     return { allowed: true, remaining: null, retryAfterSeconds: 0 };
   }
 
+  // Unidentified caller (no proxy header). Never share a bucket: that would
+  // throttle every such visitor against one another.
+  if (key === null || key === undefined) {
+    return { allowed: true, remaining: null, retryAfterSeconds: 0 };
+  }
+
   const now = Date.now();
+  evictExpired(now, windowMs);
   let entry = buckets.get(key);
 
   if (!entry || now - entry.windowStart >= windowMs) {
@@ -55,15 +75,15 @@ function checkRateLimit(key, maxRequests, windowMs) {
 
 function checkCreateSessionRateLimit(ip) {
   const windowMs = CREATE_SESSION_INTERVAL_SEC * 1000;
-  return checkRateLimit(`create-session:${ip}`, 1, windowMs);
+  return checkRateLimit((ip == null ? null : `create-session:${ip}`), 1, windowMs);
 }
 
 function checkChatRateLimit(ip) {
-  return checkRateLimit(`chat:${ip}`, CHAT_PER_MINUTE, WINDOW_MS);
+  return checkRateLimit((ip == null ? null : `chat:${ip}`), CHAT_PER_MINUTE, WINDOW_MS);
 }
 
 function checkStatusRateLimit(ip) {
-  return checkRateLimit(`status:${ip}`, STATUS_PER_MINUTE, WINDOW_MS);
+  return checkRateLimit((ip == null ? null : `status:${ip}`), STATUS_PER_MINUTE, WINDOW_MS);
 }
 
 module.exports = {

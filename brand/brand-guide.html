@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Free Gemini API · Identidade Visual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* ── primitives ─────────────────────────────── */
+    --void:#0A0A0B;
+    --surface:#131316;
+    --surface-2:#1B1B20;
+    --line:#26262C;
+    --line-soft:#1D1D22;
+    --ink:#FAFAFA;
+    --ink-2:#B4B4BD;
+    --muted:#7C7C87;
+    --faint:#4A4A53;
+
+    --accent:#4F8CFF;
+    --accent-hi:#8FB6FF;
+    --accent-dim:#16233D;
+    --mint:#24C8A0;
+    --amber:#FFB454;
+    --rose:#FF6B6B;
+
+    /* ── type ───────────────────────────────────── */
+    --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+
+    /* ── space (4px base) ───────────────────────── */
+    --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px;
+    --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+
+    --r-sm:6px; --r-md:10px; --r-lg:16px;
+    --maxw:1080px;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--void);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(900px 500px at 78% -8%, rgba(79,140,255,.10), transparent 62%),
+      radial-gradient(700px 420px at 4% 8%, rgba(36,200,160,.045), transparent 60%);
+    background-attachment:fixed;
+  }
+
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 var(--s5)}
+
+  /* ── typographic roles ──────────────────────── */
+  .eyebrow{
+    font-family:var(--mono);font-size:11px;font-weight:500;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--accent);
+    display:flex;align-items:center;gap:var(--s3);margin-bottom:var(--s4);
+  }
+  .eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
+  h1{font-size:clamp(34px,5.2vw,56px);line-height:1.06;font-weight:700;letter-spacing:-.03em}
+  h2{font-size:clamp(23px,3vw,30px);line-height:1.18;font-weight:600;letter-spacing:-.02em}
+  h3{font-size:15px;font-weight:600;letter-spacing:-.01em}
+  p{color:var(--ink-2);max-width:66ch}
+  .lede{font-size:clamp(16px,1.9vw,19px);color:var(--ink-2)}
+  .note{font-size:13px;color:var(--muted);line-height:1.55}
+  code,kbd{font-family:var(--mono);font-size:.88em}
+
+  /* ── layout ─────────────────────────────────── */
+  section{padding:var(--s9) 0;border-top:1px solid var(--line-soft)}
+  section:first-of-type{border-top:0}
+  .grid{display:grid;gap:var(--s4)}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .stack{display:flex;flex-direction:column;gap:var(--s5)}
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--r-lg);
+    padding:var(--s5);
+  }
+  .card--flush{padding:0;overflow:hidden}
+
+  /* ── header ─────────────────────────────────── */
+  header.hero{padding:var(--s9) 0 var(--s8)}
+  .hero-mark{display:flex;align-items:center;gap:var(--s4);margin-bottom:var(--s7)}
+  .hero-meta{
+    font-family:var(--mono);font-size:12px;color:var(--muted);
+    display:flex;flex-wrap:wrap;gap:var(--s5);margin-top:var(--s6);
+    padding-top:var(--s5);border-top:1px solid var(--line-soft);
+  }
+  .hero-meta b{color:var(--ink-2);font-weight:500}
+
+  /* ── logo lockup ────────────────────────────── */
+  .lockup{display:inline-flex;align-items:center;gap:14px;white-space:nowrap}
+  .lockup svg{flex:none;display:block}
+  .lockup .wm{
+    font-weight:600;letter-spacing:-.028em;color:var(--ink);
+    font-size:var(--wm,30px);line-height:1;
+  }
+  .lockup .wm i{font-style:normal;color:var(--muted);font-weight:500}
+  .lockup .tag{
+    font-family:var(--mono);font-weight:500;color:var(--accent);
+    font-size:calc(var(--wm,30px) * .40);letter-spacing:.13em;
+    border:1px solid var(--accent-dim);background:rgba(79,140,255,.07);
+    padding:3px 7px;border-radius:var(--r-sm);line-height:1;
+    align-self:center;
+  }
+
+  /* ── logo showcase tiles ────────────────────── */
+  .tile{
+    border:1px solid var(--line);border-radius:var(--r-md);
+    min-height:150px;display:grid;place-items:center;padding:var(--s5);
+    position:relative;overflow:hidden;
+  }
+  .tile[data-bg="void"]{background:var(--void)}
+  .tile[data-bg="surface"]{background:var(--surface-2)}
+  .tile[data-bg="light"]{background:#F4F4F6;border-color:#DDDDE3}
+  .tile[data-bg="accent"]{background:var(--accent);border-color:var(--accent)}
+  .tile-label{
+    position:absolute;top:10px;left:12px;font-family:var(--mono);
+    font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);
+  }
+  .tile[data-bg="light"] .tile-label{color:#9A9AA4}
+  .tile[data-bg="accent"] .tile-label{color:rgba(255,255,255,.6)}
+
+  /* inverted lockup on light/accent */
+  .on-light .wm{color:#0A0A0B}
+  .on-light .wm i{color:#8A8A94}
+  .on-light .tag{color:#0A0A0B;border-color:rgba(10,10,11,.18);background:rgba(10,10,11,.05)}
+  .on-accent .wm{color:#fff}
+  .on-accent .wm i{color:rgba(255,255,255,.72)}
+  .on-accent .tag{color:#fff;border-color:rgba(255,255,255,.38);background:rgba(255,255,255,.14)}
+
+  /* ── swatches ───────────────────────────────── */
+  .sw{
+    border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden;
+    cursor:pointer;background:var(--surface);text-align:left;
+    font:inherit;color:inherit;transition:border-color .15s,transform .15s;
+  }
+  .sw:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .sw-chip{height:78px;border-bottom:1px solid var(--line)}
+  .sw-body{padding:var(--s3) var(--s4) var(--s4)}
+  .sw-name{font-size:13px;font-weight:600;margin-bottom:2px}
+  .sw-hex{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .sw-use{font-size:11.5px;color:var(--faint);margin-top:var(--s2);line-height:1.45}
+
+  /* ── type specimens ─────────────────────────── */
+  .spec{border-bottom:1px solid var(--line-soft);padding:var(--s4) 0;display:flex;
+        align-items:baseline;justify-content:space-between;gap:var(--s5)}
+  .spec:last-child{border-bottom:0;padding-bottom:0}
+  .spec-meta{font-family:var(--mono);font-size:11px;color:var(--faint);
+             text-align:right;flex:none;letter-spacing:.04em}
+
+  /* ── terminal ───────────────────────────────── */
+  .term{background:#08080A;border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden}
+  .term-bar{
+    display:flex;align-items:center;gap:7px;padding:10px var(--s4);
+    background:var(--surface);border-bottom:1px solid var(--line);
+  }
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--line)}
+  .term-title{
+    font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:var(--s2)
+  }
+  .term-body{padding:var(--s5);font-family:var(--mono);font-size:13px;line-height:1.85;
+             overflow-x:auto;white-space:pre}
+  .c-prompt{color:var(--mint)}
+  .c-flag{color:var(--amber)}
+  .c-str{color:var(--accent-hi)}
+  .c-dim{color:var(--faint)}
+  .c-key{color:var(--accent)}
+
+  /* ── do / dont ──────────────────────────────── */
+  .rule{display:flex;gap:var(--s3);padding:var(--s3) 0;align-items:flex-start;
+        border-bottom:1px solid var(--line-soft);font-size:14px;color:var(--ink-2)}
+  .rule:last-child{border-bottom:0}
+  .rule b{flex:none;font-family:var(--mono);font-size:13px;font-weight:700;line-height:1.5}
+  .do b{color:var(--mint)} .dont b{color:var(--rose)}
+
+  /* ── voice table ────────────────────────────── */
+  .voice{width:100%;border-collapse:collapse;font-size:14px}
+  .voice th{
+    text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--faint);font-weight:500;
+    padding:0 var(--s4) var(--s3) 0;border-bottom:1px solid var(--line);
+  }
+  .voice td{padding:var(--s4) var(--s4) var(--s4) 0;border-bottom:1px solid var(--line-soft);
+            vertical-align:top;color:var(--ink-2)}
+  .voice td:first-child{color:var(--ink);font-weight:500;width:26%}
+  .voice tr:last-child td{border-bottom:0}
+  .say{color:var(--mint)} .nosay{color:var(--rose);text-decoration:line-through;
+       text-decoration-color:rgba(255,107,107,.4)}
+
+  /* ── favicon / og row ───────────────────────── */
+  .fav{display:flex;align-items:flex-end;gap:var(--s5);flex-wrap:wrap}
+  .fav-item{display:flex;flex-direction:column;align-items:center;gap:var(--s2)}
+  .fav-box{background:var(--void);border:1px solid var(--line);border-radius:var(--r-sm);
+           display:grid;place-items:center}
+  .fav-cap{font-family:var(--mono);font-size:10px;color:var(--faint)}
+
+  .badge-row{display:flex;gap:var(--s2);flex-wrap:wrap;align-items:center}
+  .badge{
+    font-family:var(--mono);font-size:11px;display:inline-flex;border-radius:4px;
+    overflow:hidden;border:1px solid var(--line)
+  }
+  .badge span{padding:4px 8px}
+  .badge .k{background:var(--surface-2);color:var(--ink-2)}
+  .badge .v{background:var(--accent);color:#06101F;font-weight:700}
+  .badge .v.mint{background:var(--mint)}
+  .badge .v.amber{background:var(--amber)}
+
+  /* ── toast ──────────────────────────────────── */
+  #toast{
+    position:fixed;left:50%;bottom:var(--s5);transform:translate(-50%,24px);
+    background:var(--surface-2);border:1px solid var(--accent);color:var(--ink);
+    font-family:var(--mono);font-size:12px;padding:9px var(--s4);border-radius:var(--r-sm);
+    opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:9;
+  }
+  #toast.on{opacity:1;transform:translate(-50%,0)}
+
+  footer{padding:var(--s7) 0 var(--s9);border-top:1px solid var(--line-soft);
+         color:var(--faint);font-size:13px;display:flex;justify-content:space-between;
+         gap:var(--s4);flex-wrap:wrap}
+  footer a{color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line)}
+  footer a:hover{color:var(--accent);border-color:var(--accent)}
+
+  @media (max-width:860px){
+    .g4{grid-template-columns:repeat(2,1fr)}
+    .g3{grid-template-columns:1fr}
+    .g2{grid-template-columns:1fr}
+    section{padding:var(--s8) 0}
+    .spec{flex-direction:column;gap:var(--s2)}
+    .spec-meta{text-align:left}
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════ HERO -->
+<header class="hero wrap">
+  <div class="hero-mark">
+    <span class="lockup" style="--wm:34px">
+      <svg width="42" height="42" viewBox="0 0 32 32" fill="none" aria-label="Free Gemini API">
+        <path d="M14.4 4.6 4.6 16l9.8 11.4" stroke="#4F8CFF" stroke-width="2.1"
+              stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M17.6 4.6 27.4 16l-9.8 11.4" stroke="#FAFAFA" stroke-width="2.1"
+              stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="16" cy="16" r="2.2" fill="#4F8CFF"/>
+      </svg>
+      <span class="wm"><i>Free</i>Gemini</span>
+      <span class="tag">API</span>
+    </span>
+  </div>
+
+  <div class="eyebrow">Identidade Visual · v1.0</div>
+  <h1>Um proxy fino,<br>uma marca fina.</h1>
+  <p class="lede" style="margin-top:var(--s4)">
+    A Free Gemini API não é um produto de consumo. É uma ferramenta que um dev
+    encontra às 2 da manhã, entende em 30 segundos e coloca em produção. A identidade
+    tem que fazer exatamente isso: <b style="color:var(--ink);font-weight:600">provar competência
+    técnica antes de pedir atenção</b>.
+  </p>
+
+  <div class="hero-meta">
+    <span>Direção · <b>Terminal Dark</b></span>
+    <span>Accent · <b>#4F8CFF</b></span>
+    <span>Type · <b>Inter + JetBrains Mono</b></span>
+    <span>Autor · <b>Felipe Estrela</b></span>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════ CONCEITO -->
+<section class="wrap">
+  <div class="eyebrow">01 · Conceito da marca</div>
+  <h2>O símbolo é o próprio fluxo da API</h2>
+  <p style="margin-top:var(--s4)">
+    Dois chevrons espelhados formam um losango partido ao meio. É a estrutura literal
+    do projeto: o cliente entra pela esquerda, o Gemini responde pela direita, e a API
+    é o ponto no centro, o único lugar onde o payload existe.
+  </p>
+
+  <div class="grid g2" style="margin-top:var(--s6);align-items:stretch">
+    <div class="card" style="display:grid;place-items:center;min-height:280px">
+      <svg width="200" height="200" viewBox="0 0 32 32" fill="none">
+        <!-- construction grid -->
+        <g stroke="#26262C" stroke-width=".22">
+          <path d="M16 1v30M1 16h30M4.6 1v30M27.4 1v30M1 4.6h30M1 27.4h30"/>
+          <circle cx="16" cy="16" r="11.4"/>
+        </g>
+        <path d="M14.4 4.6 4.6 16l9.8 11.4" stroke="#4F8CFF" stroke-width="2.1"
+              stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M17.6 4.6 27.4 16l-9.8 11.4" stroke="#FAFAFA" stroke-width="2.1"
+              stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="16" cy="16" r="2.2" fill="#4F8CFF"/>
+        <g fill="#4A4A53" font-family="monospace" font-size="1.5">
+          <text x="16.9" y="3.4">apex</text>
+          <text x="1.4" y="15.2">Ø 22.8</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="card stack" style="gap:var(--s4)">
+      <div>
+        <h3 style="color:var(--accent)">‹ &nbsp;chevron azul</h3>
+        <p class="note" style="margin-top:6px">O request. Azul porque é a parte que
+          <em>você</em> controla: o cliente, o token, o prompt.</p>
+      </div>
+      <div>
+        <h3>› &nbsp;chevron branco</h3>
+        <p class="note" style="margin-top:6px">A resposta do Gemini. Neutra, porque
+          é matéria-prima externa: a API não a inventa, só encaminha.</p>
+      </div>
+      <div>
+        <h3 style="color:var(--accent)">● &nbsp;ponto central</h3>
+        <p class="note" style="margin-top:6px">A sessão. O JWT, os cookies, o snapshot,
+          tudo que a API guarda enquanto a conversa acontece.</p>
+      </div>
+      <div style="margin-top:auto;padding-top:var(--s3);border-top:1px solid var(--line-soft)">
+        <p class="note">
+          O vão entre os dois chevrons é intencional: eles nunca se tocam.
+          A API é a lacuna, não a ponte desenhada por cima dela.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ LOGO -->
+<section class="wrap">
+  <div class="eyebrow">02 · Logo e variações</div>
+  <h2>Quatro formas, uma leitura</h2>
+  <p style="margin-top:var(--s4)">
+    O lockup completo é o padrão. Reduza para o símbolo isolado só quando o nome já
+    estiver presente no contexto (favicon, avatar, canto de slide).
+  </p>
+
+  <div class="grid g2" style="margin-top:var(--s6)">
+    <div class="tile" data-bg="void">
+      <span class="tile-label">primário / fundo escuro</span>
+      <span class="lockup" style="--wm:26px">
+        <svg width="34" height="34" viewBox="0 0 32 32" fill="none">
+          <path d="M14.4 4.6 4.6 16l9.8 11.4" stroke="#4F8CFF" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M17.6 4.6 27.4 16l-9.8 11.4" stroke="#FAFAFA" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="16" cy="16" r="2.2" fill="#4F8CFF"/>
+        </svg>
+        <span class="wm"><i>Free</i>Gemini</span><span class="tag">API</span>
+      </span>
+    </div>
+
+    <div class="tile" data-bg="light">
+      <span class="tile-label">fundo claro</span>
+      <span class="lockup on-light" style="--wm:26px">
+        <svg width="34" height="34" viewBox="0 0 32 32" fill="none">
+          <path d="M14.4 4.6 4.6 16l9.8 11.4" stroke="#2563EB" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M17.6 4.6 27.4 16l-9.8 11.4" stroke="#0A0A0B" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="16" cy="16" r="2.2" fill="#2563EB"/>
+        </svg>
+        <span class="wm"><i>Free</i>Gemini</span><span class="tag">API</span>
+      </span>
+    </div>
+
+    <div class="tile" data-bg="accent">
+      <span class="tile-label">sobre o accent</span>
+      <span class="lockup on-accent" style="--wm:26px">
+        <svg width="34" height="34" viewBox="0 0 32 32" fill="none">
+          <path d="M14.4 4.6 4.6 16l9.8 11.4" stroke="rgba(255,255,255,.7)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M17.6 4.6 27.4 16l-9.8 11.4" stroke="#FFFFFF" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="16" cy="16" r="2.2" fill="#FFFFFF"/>
+        </svg>
+        <span class="wm"><i>Free</i>Gemini</span><span class="tag">API</span>
+      </span>
+    </div>
+
+    <div class="tile" data-bg="surface">
+      <span class="tile-label">monocromático / 1 cor</span>
+      <span class="lockup" style="--wm:26px">
+        <svg width="34" height="34" viewBox="0 0 32 32" fill="none">
+          <path d="M14.4 4.6 4.6 16l9.8 11.4" stroke="#FAFAFA" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M17.6 4.6 27.4 16l-9.8 11.4" stroke="#FAFAFA" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="16" cy="16" r="2.2" fill="#FAFAFA"/>
+        </svg>
+        <span class="wm" style="color:#FAFAFA"><i style="color:#FAFAFA;opacity:.55">Free</i>Gemini</span>
+        <span class="tag" style="color:#FAFAFA;border-color:rgba(250,250,250,.25);background:rgba(250,250,250,.07)">API</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- escala -->
+  <div class="card" style="margin-top:var(--s4)">
+    <h3 style="margin-bottom:var(--s4)">Escala mínima e favicon</h3>
+    <div class="fav">
+      <div class="fav-item">
+        <div class="fav-box" style="width:64px;height:64px">
+          <svg width="40" height="40" viewBox="0 0 32 32" fill="none">
+            <path d="M14.4 4.6 4.6 16l9.8 11.4" stroke="#4F8CFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M17.6 4.6 27.4 16l-9.8 11.4" stroke="#FAFAFA" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="16" cy="16" r="2.4" fill="#4F8CFF"/>
+          </svg>
+        </div><span class="fav-cap">64px</span>
+      </div>
+      <div class="fav-item">
+        <div class="fav-box" style="width:32px;height:32px">
+          <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+            <path d="M14.4 4.6 4.6 16l9.8 11.4" stroke="#4F8CFF" stroke-width="2.9" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M17.6 4.6 27.4 16l-9.8 11.4" stroke="#FAFAFA" stroke-width="2.9" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="16" cy="16" r="2.6" fill="#4F8CFF"/>
+          </svg>
+        </div><span class="fav-cap">32px</span>
+      </div>
+      <div class="fav-item">
+        <div class="fav-box" style="width:16px;height:16px">
+          <svg width="13" height="13" viewBox="0 0 32 32" fill="none">
+            <path d="M14 5 5 16l9 11" stroke="#4F8CFF" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M18 5l9 11-9 11" stroke="#FAFAFA" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div><span class="fav-cap">16px</span>
+      </div>
+      <p class="note" style="max-width:38ch">
+        Abaixo de <b style="color:var(--ink-2)">20px</b> o ponto central some e o traço
+        engrossa para 3.6. É a única alteração permitida na construção do símbolo.
+      </p>
+    </div>
+  </div>
+
+  <!-- regras -->
+  <div class="grid g2" style="margin-top:var(--s4)">
+    <div class="card do">
+      <h3 style="color:var(--mint);margin-bottom:var(--s3)">Faça</h3>
+      <div class="rule do"><b>✓</b><span>Respeite a área de proteção: metade da altura do símbolo em todos os lados.</span></div>
+      <div class="rule do"><b>✓</b><span>Use o lockup completo na primeira aparição em qualquer peça.</span></div>
+      <div class="rule do"><b>✓</b><span>Sobre foto ou gradiente, use a versão monocromática branca.</span></div>
+      <div class="rule do"><b>✓</b><span>Mantenha "Free" sempre mais claro que "Gemini". A hierarquia é do nome do produto.</span></div>
+    </div>
+    <div class="card dont">
+      <h3 style="color:var(--rose);margin-bottom:var(--s3)">Não faça</h3>
+      <div class="rule dont"><b>✕</b><span>Não aplique gradiente, sombra, contorno ou brilho no símbolo.</span></div>
+      <div class="rule dont"><b>✕</b><span>Não feche o vão entre os chevrons. O vão é o conceito.</span></div>
+      <div class="rule dont"><b>✕</b><span>Não rotacione, incline ou reflita a marca.</span></div>
+      <div class="rule dont"><b>✕</b><span>Não use as cores oficiais do Google/Gemini. Este é um projeto independente.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ COR -->
+<section class="wrap">
+  <div class="eyebrow">03 · Cor</div>
+  <h2>90% neutro, 10% sinal</h2>
+  <p style="margin-top:var(--s4)">
+    O azul não é decoração, é semântica. Ele marca <em>só</em> o que é acionável ou é
+    o request. Se tudo brilha, nada informa. Clique em qualquer swatch para copiar o hex.
+  </p>
+
+  <h3 style="margin:var(--s6) 0 var(--s3);color:var(--muted)">Neutros · a base</h3>
+  <div class="grid g4">
+    <button class="sw" data-hex="#0A0A0B">
+      <div class="sw-chip" style="background:#0A0A0B"></div>
+      <div class="sw-body"><div class="sw-name">Void</div><div class="sw-hex">#0A0A0B</div>
+      <div class="sw-use">Fundo da página. Nunca preto puro.</div></div>
+    </button>
+    <button class="sw" data-hex="#131316">
+      <div class="sw-chip" style="background:#131316"></div>
+      <div class="sw-body"><div class="sw-name">Surface</div><div class="sw-hex">#131316</div>
+      <div class="sw-use">Cards, painéis, barra de terminal.</div></div>
+    </button>
+    <button class="sw" data-hex="#26262C">
+      <div class="sw-chip" style="background:#26262C"></div>
+      <div class="sw-body"><div class="sw-name">Line</div><div class="sw-hex">#26262C</div>
+      <div class="sw-use">Bordas de 1px. Divisão, nunca ênfase.</div></div>
+    </button>
+    <button class="sw" data-hex="#FAFAFA">
+      <div class="sw-chip" style="background:#FAFAFA"></div>
+      <div class="sw-body"><div class="sw-name">Ink</div><div class="sw-hex">#FAFAFA</div>
+      <div class="sw-use">Texto principal, títulos, resposta.</div></div>
+    </button>
+  </div>
+
+  <h3 style="margin:var(--s6) 0 var(--s3);color:var(--muted)">Texto secundário</h3>
+  <div class="grid g3">
+    <button class="sw" data-hex="#B4B4BD">
+      <div class="sw-chip" style="background:#B4B4BD;height:56px"></div>
+      <div class="sw-body"><div class="sw-name">Ink 2</div><div class="sw-hex">#B4B4BD</div>
+      <div class="sw-use">Parágrafos. 9.8:1 sobre Void.</div></div>
+    </button>
+    <button class="sw" data-hex="#7C7C87">
+      <div class="sw-chip" style="background:#7C7C87;height:56px"></div>
+      <div class="sw-body"><div class="sw-name">Muted</div><div class="sw-hex">#7C7C87</div>
+      <div class="sw-use">Labels, metadados. 4.7:1, mínimo AA.</div></div>
+    </button>
+    <button class="sw" data-hex="#4A4A53">
+      <div class="sw-chip" style="background:#4A4A53;height:56px"></div>
+      <div class="sw-body"><div class="sw-name">Faint</div><div class="sw-hex">#4A4A53</div>
+      <div class="sw-use">Só decorativo. Nunca texto que precisa ser lido.</div></div>
+    </button>
+  </div>
+
+  <h3 style="margin:var(--s6) 0 var(--s3);color:var(--muted)">Sinal · use com parcimônia</h3>
+  <div class="grid g4">
+    <button class="sw" data-hex="#4F8CFF">
+      <div class="sw-chip" style="background:#4F8CFF"></div>
+      <div class="sw-body"><div class="sw-name">Accent · Request</div><div class="sw-hex">#4F8CFF</div>
+      <div class="sw-use">Links, CTA, foco, chevron esquerdo.</div></div>
+    </button>
+    <button class="sw" data-hex="#24C8A0">
+      <div class="sw-chip" style="background:#24C8A0"></div>
+      <div class="sw-body"><div class="sw-name">Mint · 200 OK</div><div class="sw-hex">#24C8A0</div>
+      <div class="sw-use">Sucesso, sessão válida, prompt do shell.</div></div>
+    </button>
+    <button class="sw" data-hex="#FFB454">
+      <div class="sw-chip" style="background:#FFB454"></div>
+      <div class="sw-body"><div class="sw-name">Amber · 429</div><div class="sw-hex">#FFB454</div>
+      <div class="sw-use">Rate limit, cooldown, aviso de TTL.</div></div>
+    </button>
+    <button class="sw" data-hex="#FF6B6B">
+      <div class="sw-chip" style="background:#FF6B6B"></div>
+      <div class="sw-body"><div class="sw-name">Rose · 4xx/5xx</div><div class="sw-hex">#FF6B6B</div>
+      <div class="sw-use">Erro, sessão expirada, falha no Gemini.</div></div>
+    </button>
+  </div>
+
+  <div class="card" style="margin-top:var(--s4);border-color:var(--accent-dim);
+       background:linear-gradient(180deg,rgba(79,140,255,.05),transparent)">
+    <p class="note">
+      <b style="color:var(--accent);font-family:var(--mono)">Regra 90/10 ·</b>
+      em qualquer tela, no máximo <b style="color:var(--ink-2)">10% da área</b> pode ser
+      accent ou cor de status. As quatro cores de sinal mapeiam 1:1 nos códigos de erro
+      documentados em <code style="color:var(--ink-2)">doc/ERROR_CODES.md</code>: o usuário
+      aprende a paleta lendo os logs.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ TIPOGRAFIA -->
+<section class="wrap">
+  <div class="eyebrow">04 · Tipografia</div>
+  <h2>Inter fala, JetBrains Mono prova</h2>
+  <p style="margin-top:var(--s4)">
+    Duas famílias, papéis rígidos. <b style="color:var(--ink);font-weight:600">Inter</b> para
+    prosa e interface. <b style="color:var(--ink);font-weight:600">JetBrains Mono</b> para tudo
+    que uma máquina produziria: endpoints, códigos de erro, hex, chaves de env, labels de seção.
+    Nunca use mono como corpo de texto, porque vira estética vazia.
+  </p>
+
+  <div class="card" style="margin-top:var(--s6)">
+    <div class="spec">
+      <div style="font-size:44px;font-weight:700;letter-spacing:-.03em;line-height:1.05">
+        Um proxy fino
+      </div>
+      <div class="spec-meta">Display<br>Inter 700 · 44/46 · -3%</div>
+    </div>
+    <div class="spec">
+      <div style="font-size:28px;font-weight:600;letter-spacing:-.02em">
+        Título de seção
+      </div>
+      <div class="spec-meta">H2<br>Inter 600 · 28/33 · -2%</div>
+    </div>
+    <div class="spec">
+      <div style="font-size:16px;color:var(--ink-2);max-width:52ch">
+        Corpo de texto. Máximo de 66 caracteres por linha, altura de linha 1.6.
+        É onde a documentação vive: legibilidade acima de personalidade.
+      </div>
+      <div class="spec-meta">Body<br>Inter 400 · 16/26</div>
+    </div>
+    <div class="spec">
+      <div style="font-family:var(--mono);font-size:14px;color:var(--accent)">
+        POST /create-session → 200 { sessionToken }
+      </div>
+      <div class="spec-meta">Code<br>JetBrains Mono 400 · 14/24</div>
+    </div>
+    <div class="spec">
+      <div style="font-family:var(--mono);font-size:11px;letter-spacing:.16em;
+                  text-transform:uppercase;color:var(--muted)">
+        RATE_LIMIT_CHAT_PER_MINUTE
+      </div>
+      <div class="spec-meta">Label / Eyebrow<br>Mono 500 · 11 · +16%</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ APLICAÇÃO -->
+<section class="wrap">
+  <div class="eyebrow">05 · Aplicação</div>
+  <h2>A marca em uso</h2>
+  <p style="margin-top:var(--s4)">
+    O terminal é o principal ativo visual do projeto, mais persuasivo que qualquer
+    ilustração. Use-o como herói da landing page.
+  </p>
+
+  <div class="term" style="margin-top:var(--s6)">
+    <div class="term-bar">
+      <span class="dot" style="background:#FF6B6B"></span>
+      <span class="dot" style="background:#FFB454"></span>
+      <span class="dot" style="background:#24C8A0"></span>
+      <span class="term-title">~/free-gemini-api</span>
+    </div>
+<div class="term-body"><span class="c-prompt">$</span> TOKEN=$(curl -s -X POST localhost:3333<span class="c-str">/create-session</span> | jq -r .sessionToken)
+
+<span class="c-prompt">$</span> curl -s localhost:3333<span class="c-str">/chat</span> <span class="c-flag">\</span>
+    <span class="c-flag">-H</span> <span class="c-str">"Authorization: Bearer $TOKEN"</span> <span class="c-flag">\</span>
+    <span class="c-flag">-d</span> <span class="c-str">'{"prompt":"Explique streams em Node."}'</span>
+
+{ <span class="c-key">"ok"</span>: true, <span class="c-key">"reply"</span>: <span class="c-str">"Streams são interfaces para..."</span> }
+<span class="c-dim">└─ 1.84s · sessão válida por mais 42min</span></div>
+  </div>
+
+  <div class="grid g2" style="margin-top:var(--s4)">
+    <div class="card">
+      <h3 style="margin-bottom:var(--s4)">Badges do README</h3>
+      <div class="badge-row">
+        <span class="badge"><span class="k">status</span><span class="v mint">online</span></span>
+        <span class="badge"><span class="k">runtime</span><span class="v">node 18+</span></span>
+        <span class="badge"><span class="k">framework</span><span class="v">elysia</span></span>
+        <span class="badge"><span class="k">license</span><span class="v amber">ISC</span></span>
+      </div>
+      <p class="note" style="margin-top:var(--s4)">
+        Mono, cantos de 4px, key em Surface e value na cor de status.
+        Mesma gramática dos códigos de erro.
+      </p>
+    </div>
+
+    <div class="card card--flush" style="display:flex;flex-direction:column">
+      <div style="flex:1;background:linear-gradient(135deg,#0A0A0B,#12182A);
+                  padding:var(--s5);display:flex;flex-direction:column;justify-content:center;
+                  gap:var(--s3);min-height:180px">
+        <span class="lockup" style="--wm:19px">
+          <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+            <path d="M14.4 4.6 4.6 16l9.8 11.4" stroke="#4F8CFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M17.6 4.6 27.4 16l-9.8 11.4" stroke="#FAFAFA" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="16" cy="16" r="2.2" fill="#4F8CFF"/>
+          </svg>
+          <span class="wm"><i>Free</i>Gemini</span><span class="tag">API</span>
+        </span>
+        <div style="font-size:20px;font-weight:600;letter-spacing:-.02em;line-height:1.25">
+          Gemini via REST.<br>Sem SDK, sem browser, sem custo.
+        </div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--muted)">
+          github.com/lipey1/free-gemini-api
+        </div>
+      </div>
+      <div style="padding:var(--s3) var(--s4);border-top:1px solid var(--line)">
+        <span class="fav-cap">OG image · 1200 × 630</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ VOZ -->
+<section class="wrap">
+  <div class="eyebrow">06 · Tom de voz</div>
+  <h2>Escreva como quem já debugou isso</h2>
+  <p style="margin-top:var(--s4)">
+    O README atual já acerta o tom: ele diz abertamente que <em>"qualquer framework Node
+    moderno seria adequado"</em> e lista o que o projeto <em>não</em> faz. Essa honestidade
+    é o maior ativo da marca, porque sinaliza senioridade melhor que qualquer adjetivo.
+  </p>
+
+  <div class="card" style="margin-top:var(--s6)">
+    <table class="voice">
+      <thead>
+        <tr><th>Princípio</th><th>Diga</th><th>Não diga</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Específico, não superlativo</td>
+          <td class="say">"Resposta em ~1.8s; o gargalo é o Gemini."</td>
+          <td class="nosay">"Performance ultrarrápida e escalável."</td>
+        </tr>
+        <tr>
+          <td>Limites na frente</td>
+          <td class="say">"Não mantém histórico entre chamadas."</td>
+          <td class="nosay">Omitir e deixar o dev descobrir em produção.</td>
+        </tr>
+        <tr>
+          <td>Erro como instrução</td>
+          <td class="say">"Sessão expirada. Crie uma nova em POST /create-session."</td>
+          <td class="nosay">"Ops! Algo deu errado 😅"</td>
+        </tr>
+        <tr>
+          <td>Mostre, não prometa</td>
+          <td class="say">Um bloco de cURL que roda copiando e colando.</td>
+          <td class="nosay">"Integração simples e intuitiva."</td>
+        </tr>
+        <tr>
+          <td>Sem hype de IA</td>
+          <td class="say">"Proxy HTTP fino para o Gemini web."</td>
+          <td class="nosay">"Plataforma de IA revolucionária."</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" style="margin-top:var(--s4)">
+    <h3 style="margin-bottom:var(--s3)">Tagline</h3>
+    <div style="font-size:clamp(20px,3vw,30px);font-weight:600;letter-spacing:-.02em;line-height:1.3">
+      Gemini via REST.<br>
+      <span style="color:var(--muted)">Sem SDK, sem browser, sem custo.</span>
+    </div>
+    <p class="note" style="margin-top:var(--s4)">
+      Três negativas em sequência, e a estrutura espelha a seção
+      <em>"O que este projeto não faz"</em> do README. Alternativa curta para
+      favicon/avatar/bio: <code style="color:var(--accent)">um proxy fino para o Gemini</code>.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ FOOTER -->
+<footer class="wrap">
+  <div>Free Gemini API · Identidade Visual v1.0 · Direção <b style="color:var(--muted)">Terminal Dark</b></div>
+  <div>Felipe Estrela · <a href="https://github.com/lipey1">github.com/lipey1</a></div>
+</footer>
+
+<div id="toast">copiado</div>
+
+<script>
+  const toast = document.getElementById('toast');
+  let t;
+  document.querySelectorAll('.sw').forEach(function (el) {
+    el.addEventListener('click', function () {
+      const hex = el.dataset.hex;
+      navigator.clipboard.writeText(hex).then(function () {
+        toast.textContent = hex + ' copiado';
+        toast.classList.add('on');
+        clearTimeout(t);
+        t = setTimeout(function () { toast.classList.remove('on'); }, 1400);
+      });
+    });
+  });
+</script>
+</body>
+</html>

@@ -108,10 +108,12 @@ function buildOpenApiSpec() {
       },
     },
     paths: {
-      "/": {
+      "/health": {
         get: {
           tags: ["health"],
           summary: "Health check",
+          description:
+            "Antes da fusão do site com a API este payload ficava em GET /. A raiz agora serve a landing page.",
           responses: {
             200: {
               description: "API online",

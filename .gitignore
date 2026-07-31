@@ -5,3 +5,8 @@ data/sessions.sqlite
 data/sessions.sqlite-*
 tests/
 package-lock.json
+# Next.js build output (web/)
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
