@@ -19,6 +19,8 @@ export const dict = {
   "nav.playground": { en: "Console", pt: "Console" },
   "nav.docs": { en: "/docs", pt: "/docs" },
   "nav.github": { en: "GitHub", pt: "GitHub" },
+  "nav.pricing": { en: "Pricing", pt: "Planos" },
+  "nav.account": { en: "Account", pt: "Conta" },
   "skip": { en: "Skip to content", pt: "Pular para o conteúdo" },
 
   // ── hero ──────────────────────────────────────────────
@@ -105,8 +107,8 @@ export const dict = {
     pt: "Recebe um prompt, substitui-o no corpo f.req capturado, encaminha a requisição com os cookies da sessão e retorna o texto processado. O token pode ser informado no cabeçalho Authorization ou no corpo da requisição.",
   },
   "ep.chat.note": {
-    en: "3.9 to 27.5 s observed · 30 req / min per IP · 20 000 character limit",
-    pt: "3,9 a 27,5 s observado · 30 req / min por IP · limite de 20 000 caracteres",
+    en: "3.9 to 27.5 s observed · Free 20 req / min · 20 000 character limit",
+    pt: "3,9 a 27,5 s observado · Free 20 req / min · limite de 20 000 caracteres",
   },
   "ep.status.body": {
     en: "Validates the token against the session store without contacting Google. Always returns HTTP 200; an expired session is reported in the response body rather than as a protocol error.",
@@ -129,8 +131,8 @@ export const dict = {
     pt: "Rate limits e duração da sessão",
   },
   "quota.body": {
-    en: "Fixed windows per IP address, held in memory. Each limit is configurable through an environment variable, and a value of 0 disables it. After 45 minutes /chat returns SESSION_EXPIRED and a new session must be created.",
-    pt: "Janelas fixas por endereço IP, mantidas em memória. Cada limite é configurável por variável de ambiente, e o valor 0 o desativa. Após 45 minutos, /chat retorna SESSION_EXPIRED e uma nova sessão deve ser criada.",
+    en: "Free tier is 20 requests per minute (per IP when anonymous, per account when signed in). Paid plans raise the /chat cap. Limits are fixed windows in memory. After 45 minutes /chat returns SESSION_EXPIRED and a new session must be created.",
+    pt: "O plano Free é 20 requisições por minuto (por IP anônimo ou por conta autenticada). Planos pagos elevam o teto de /chat. Limites são janelas fixas em memória. Após 45 minutos, /chat retorna SESSION_EXPIRED e uma nova sessão deve ser criada.",
   },
   "quota.ttl": { en: "session lifetime", pt: "duração da sessão" },
 
@@ -236,8 +238,8 @@ export const dict = {
 
   // ── errors ────────────────────────────────────────────
   "err.RATE_LIMIT_EXCEEDED": {
-    en: "Rate limit exceeded. The API permits 30 requests per minute per IP address.",
-    pt: "Rate limit excedido. A API permite 30 requisições por minuto por endereço IP.",
+    en: "Rate limit exceeded. Free allows 20 requests per minute; paid plans raise the cap.",
+    pt: "Rate limit excedido. O Free permite 20 requisições por minuto; planos pagos elevam o teto.",
   },
   "err.SESSION_COOLDOWN_ACTIVE": {
     en: "Session cooldown active. One session may be created every 15 seconds.",

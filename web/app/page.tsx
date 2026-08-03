@@ -43,7 +43,7 @@ const SPANS = [
 
 const QUOTAS = [
   { name: "POST /create-session", env: "RATE_LIMIT_CREATE_SESSION_INTERVAL_SEC", fill: 8, val: "1 / 15 s" },
-  { name: "POST /chat", env: "RATE_LIMIT_CHAT_PER_MINUTE", fill: 50, val: "30 / min" },
+  { name: "POST /chat", env: "RATE_LIMIT_CHAT_PER_MINUTE", fill: 50, val: "20 / min" },
   { name: "GET · POST /session/status", env: "RATE_LIMIT_STATUS_PER_MINUTE", fill: 100, val: "60 / min" },
 ];
 

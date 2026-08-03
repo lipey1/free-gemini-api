@@ -13,6 +13,8 @@ const ApiErrorCode = {
   GEMINI_UNAVAILABLE: "GEMINI_UNAVAILABLE",
   GEMINI_RESPONSE_INVALID: "GEMINI_RESPONSE_INVALID",
   RATE_LIMIT_EXCEEDED: "RATE_LIMIT_EXCEEDED",
+  AUTH_REQUIRED: "AUTH_REQUIRED",
+  ACCOUNT_DISABLED: "ACCOUNT_DISABLED",
   INTERNAL_ERROR: "INTERNAL_ERROR",
 };
 
@@ -45,6 +47,10 @@ const ApiErrorMessage = {
     "Não foi possível interpretar a resposta do Gemini. Tente novamente.",
   [ApiErrorCode.RATE_LIMIT_EXCEEDED]:
     "Muitas requisições. Aguarde antes de tentar novamente.",
+  [ApiErrorCode.AUTH_REQUIRED]:
+    "Faça login ou envie uma API key para continuar.",
+  [ApiErrorCode.ACCOUNT_DISABLED]:
+    "Esta conta foi desativada.",
   [ApiErrorCode.INTERNAL_ERROR]:
     "Erro interno no servidor. Tente novamente.",
 };

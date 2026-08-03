@@ -1,3 +1,7 @@
+const { getPlan } = require("../config/plans");
+const { scheduleUsageRecord } = require("./usage");
+const { API_KEY_CREATE_PER_MINUTE } = require("../config/limits");
+
 const buckets = new Map();
 
 function parsePositiveInt(value, fallback) {
@@ -10,15 +14,16 @@ const CREATE_SESSION_INTERVAL_SEC = parsePositiveInt(
   process.env.RATE_LIMIT_CREATE_SESSION_INTERVAL_SEC,
   15,
 );
-const CHAT_PER_MINUTE = parsePositiveInt(process.env.RATE_LIMIT_CHAT_PER_MINUTE, 30);
+const FREE_CHAT_RPM = parsePositiveInt(
+  process.env.RATE_LIMIT_CHAT_PER_MINUTE,
+  getPlan("free").rpm,
+);
 const STATUS_PER_MINUTE = parsePositiveInt(
   process.env.RATE_LIMIT_STATUS_PER_MINUTE,
   60,
 );
 const WINDOW_MS = 60_000;
 
-/* Buckets are keyed per IP, so the map grows with the audience. Evict expired
-   entries periodically or a long-running process leaks one entry per visitor. */
 const EVICT_EVERY_MS = 5 * 60_000;
 let lastEviction = Date.now();
 
@@ -35,8 +40,6 @@ function checkRateLimit(key, maxRequests, windowMs) {
     return { allowed: true, remaining: null, retryAfterSeconds: 0 };
   }
 
-  // Unidentified caller (no proxy header). Never share a bucket: that would
-  // throttle every such visitor against one another.
   if (key === null || key === undefined) {
     return { allowed: true, remaining: null, retryAfterSeconds: 0 };
   }
@@ -58,6 +61,8 @@ function checkRateLimit(key, maxRequests, windowMs) {
       retryAfterSeconds: Math.max(1, Math.ceil(retryAfterMs / 1000)),
       limit: maxRequests,
       windowSeconds: Math.ceil(windowMs / 1000),
+      windowStart: entry.windowStart,
+      used: entry.count,
     };
   }
 
@@ -70,24 +75,108 @@ function checkRateLimit(key, maxRequests, windowMs) {
     retryAfterSeconds: 0,
     limit: maxRequests,
     windowSeconds: Math.ceil(windowMs / 1000),
+    windowStart: entry.windowStart,
+    used: entry.count,
   };
 }
 
-function checkCreateSessionRateLimit(ip) {
+function peekRateLimit(key, maxRequests, windowMs) {
+  if (!maxRequests || key == null) {
+    return {
+      remaining: maxRequests || null,
+      used: 0,
+      limit: maxRequests || null,
+      windowSeconds: Math.ceil(windowMs / 1000),
+      windowStart: null,
+      resetAt: null,
+    };
+  }
+  const now = Date.now();
+  const entry = buckets.get(key);
+  if (!entry || now - entry.windowStart >= windowMs) {
+    return {
+      remaining: maxRequests,
+      used: 0,
+      limit: maxRequests,
+      windowSeconds: Math.ceil(windowMs / 1000),
+      windowStart: null,
+      resetAt: null,
+    };
+  }
+  const used = entry.count;
+  const remaining = Math.max(0, maxRequests - used);
+  return {
+    remaining,
+    used,
+    limit: maxRequests,
+    windowSeconds: Math.ceil(windowMs / 1000),
+    windowStart: entry.windowStart,
+    resetAt: entry.windowStart + windowMs,
+  };
+}
+
+function resolveChatLimit(user) {
+  if (user?.plan) {
+    const plan = getPlan(user.plan);
+    return { keyPart: `user:${user.id}`, limit: plan.rpm, planId: plan.id };
+  }
+  return { keyPart: null, limit: FREE_CHAT_RPM, planId: "free" };
+}
+
+function checkCreateSessionRateLimit(ip, user = null) {
   const windowMs = CREATE_SESSION_INTERVAL_SEC * 1000;
-  return checkRateLimit((ip == null ? null : `create-session:${ip}`), 1, windowMs);
+  const identity = user?.id ? `user:${user.id}` : ip == null ? null : `ip:${ip}`;
+  return checkRateLimit(
+    identity == null ? null : `create-session:${identity}`,
+    1,
+    windowMs,
+  );
 }
 
-function checkChatRateLimit(ip) {
-  return checkRateLimit((ip == null ? null : `chat:${ip}`), CHAT_PER_MINUTE, WINDOW_MS);
+function checkChatRateLimit(ip, user = null) {
+  const { keyPart, limit, planId } = resolveChatLimit(user);
+  const identity = keyPart || (ip == null ? null : `ip:${ip}`);
+  const result = checkRateLimit(
+    identity == null ? null : `chat:${identity}`,
+    limit,
+    WINDOW_MS,
+  );
+  if (result.allowed && user?.id) {
+    scheduleUsageRecord(user.id, "chat");
+  }
+  return { ...result, planId };
 }
 
-function checkStatusRateLimit(ip) {
-  return checkRateLimit((ip == null ? null : `status:${ip}`), STATUS_PER_MINUTE, WINDOW_MS);
+function peekChatRateLimit(user = null) {
+  const { keyPart, limit, planId } = resolveChatLimit(user);
+  if (!keyPart) {
+    return { ...peekRateLimit(null, limit, WINDOW_MS), planId };
+  }
+  return { ...peekRateLimit(`chat:${keyPart}`, limit, WINDOW_MS), planId };
+}
+
+function checkStatusRateLimit(ip, user = null) {
+  const identity = user?.id ? `user:${user.id}` : ip == null ? null : `ip:${ip}`;
+  return checkRateLimit(
+    identity == null ? null : `status:${identity}`,
+    STATUS_PER_MINUTE,
+    WINDOW_MS,
+  );
+}
+
+function checkApiKeyCreateRateLimit(userId) {
+  return checkRateLimit(
+    `api-key-create:user:${userId}`,
+    API_KEY_CREATE_PER_MINUTE,
+    WINDOW_MS,
+  );
 }
 
 module.exports = {
   checkCreateSessionRateLimit,
   checkChatRateLimit,
   checkStatusRateLimit,
+  checkApiKeyCreateRateLimit,
+  peekChatRateLimit,
+  FREE_CHAT_RPM,
 };

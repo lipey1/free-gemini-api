@@ -3,6 +3,8 @@ node_modules/
 .gemini-browser-profile/
 data/sessions.sqlite
 data/sessions.sqlite-*
+data/app.sqlite
+data/app.sqlite-*
 tests/
 package-lock.json
 # Next.js build output (web/)
@@ -10,3 +12,7 @@ package-lock.json
 out/
 next-env.d.ts
 *.tsbuildinfo
+
+# Local archives
+web/src.zip
+*.zip

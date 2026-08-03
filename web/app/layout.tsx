@@ -135,7 +135,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }),
           }}
         />
-        <LangProvider>{children}</LangProvider>
+        <LangProvider>
+          <div className="page-shell">{children}</div>
+        </LangProvider>
       </body>
     </html>
   );

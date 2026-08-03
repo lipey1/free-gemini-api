@@ -20,6 +20,7 @@ const {
   checkChatRateLimit,
   checkStatusRateLimit,
 } = require("../services/rate-limit");
+const { resolveCaller } = require("../services/auth");
 const logger = require("../utils/logger");
 const { getClientIp } = require("../utils/client-ip");
 const defaultPromptPath = path.resolve(__dirname, "../config/default_prompt.txt");
@@ -28,7 +29,9 @@ const PROMPT_MAX_LENGTH = 20_000;
 function extractToken(request, body) {
   const auth = request.headers.get("authorization");
   if (auth && auth.startsWith("Bearer ")) {
-    return auth.slice("Bearer ".length).trim();
+    const bearer = auth.slice("Bearer ".length).trim();
+    // API keys also travel as Bearer fga_… — never treat them as Gemini JWTs.
+    if (bearer && !bearer.startsWith("fga_")) return bearer;
   }
   if (typeof body?.sessionToken === "string") {
     return body.sessionToken.trim();
@@ -113,13 +116,15 @@ async function inspectSessionToken(token) {
 
 async function handleSessionStatus({ request, body, set }) {
   const ip = getClientIp(request);
-  const rateLimit = checkStatusRateLimit(ip);
+  const caller = await resolveCaller(request, body);
+  const rateLimit = checkStatusRateLimit(ip, caller.user);
   if (!rateLimit.allowed) {
     return apiError(set, 429, ApiErrorCode.RATE_LIMIT_EXCEEDED, {
       endpoint: "/session/status",
       retryAfterSeconds: rateLimit.retryAfterSeconds,
       limit: rateLimit.limit,
       windowSeconds: rateLimit.windowSeconds,
+      plan: caller.user?.plan || "free",
     });
   }
 
@@ -149,14 +154,23 @@ function registerChatRoutes(app) {
     .get("/health", () => ({
       ok: true,
       message: "Free Gemini API online",
-      endpoints: ["POST /create-session", "POST /chat", "GET /session/status", "POST /session/status"],
+      endpoints: [
+        "POST /create-session",
+        "POST /chat",
+        "GET /session/status",
+        "POST /session/status",
+        "POST /auth/register",
+        "POST /auth/login",
+        "GET /plans",
+      ],
       docs: "/docs",
       openapi: "/openapi.json",
       errorCodesDoc: "doc/ERROR_CODES.md",
     }))
-    .post("/create-session", async ({ request, set }) => {
+    .post("/create-session", async ({ request, body, set }) => {
       const ip = getClientIp(request);
-      const rateLimit = checkCreateSessionRateLimit(ip);
+      const caller = await resolveCaller(request, body);
+      const rateLimit = checkCreateSessionRateLimit(ip, caller.user);
 
       if (!rateLimit.allowed) {
         return apiError(
@@ -194,13 +208,15 @@ function registerChatRoutes(app) {
     .post("/session/status", handleSessionStatus)
     .post("/chat", async ({ request, body, set }) => {
       const ip = getClientIp(request);
-      const rateLimit = checkChatRateLimit(ip);
+      const caller = await resolveCaller(request, body);
+      const rateLimit = checkChatRateLimit(ip, caller.user);
       if (!rateLimit.allowed) {
         return apiError(set, 429, ApiErrorCode.RATE_LIMIT_EXCEEDED, {
           endpoint: "/chat",
           retryAfterSeconds: rateLimit.retryAfterSeconds,
           limit: rateLimit.limit,
           windowSeconds: rateLimit.windowSeconds,
+          plan: rateLimit.planId || caller.user?.plan || "free",
         });
       }
 

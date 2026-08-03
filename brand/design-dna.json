@@ -1,0 +1,129 @@
+{
+  "meta": {
+    "name": "Free Gemini API",
+    "description": "Terminal Dark developer-tool SaaS — thin Gemini REST proxy with plan-based request quotas.",
+    "source_references": [
+      "https://freegemini.felipeestrela.com.br",
+      "brand/brand-guide.html",
+      "web/app/globals.css"
+    ],
+    "created_at": "2026-08-03"
+  },
+  "design_system": {
+    "color": {
+      "palette_type": "OLED dark terminal with blue accent and semantic status hues",
+      "primary": { "hex": "#4F8CFF", "role": "Accent / CTA / own-system markers / focus ring" },
+      "secondary": { "hex": "#8FB6FF", "role": "Accent highlight on hover and syntax strings" },
+      "accent": { "hex": "#24C8A0", "role": "Success / HTTP GET / terminal prompt" },
+      "neutral": {
+        "scale": ["#0A0A0B", "#131316", "#1B1B20", "#26262C", "#4A4A53", "#7C7C87", "#B4B4BD", "#FAFAFA"],
+        "usage": "void → surface → line → faint → muted → ink-2 → ink"
+      },
+      "semantic": {
+        "success": "#24C8A0",
+        "warning": "#FFB454",
+        "error": "#FF6B6B",
+        "info": "#4F8CFF"
+      },
+      "surface": {
+        "background": "#0A0A0B",
+        "card": "#131316",
+        "elevated": "#1B1B20"
+      },
+      "contrast_strategy": "Near-black void with high-contrast ink; accent used sparingly (90/10 rule); mint/amber/rose reserved for status"
+    },
+    "typography": {
+      "type_scale": {
+        "display": { "size": "clamp(38px, 5.6vw, 62px)", "weight": "700", "line_height": "1.02", "tracking": "-0.038em" },
+        "heading_1": { "size": "clamp(38px, 5.6vw, 62px)", "weight": "700", "line_height": "1.02", "tracking": "-0.038em" },
+        "heading_2": { "size": "clamp(25px, 3.2vw, 34px)", "weight": "600", "line_height": "1.14", "tracking": "-0.026em" },
+        "heading_3": { "size": "15px–17px", "weight": "600", "line_height": "1.3", "tracking": "-0.01em" },
+        "body": { "size": "16px", "weight": "400", "line_height": "1.6", "tracking": "0" },
+        "body_small": { "size": "14.5px", "weight": "400", "line_height": "1.55", "tracking": "0" },
+        "caption": { "size": "11–12px", "weight": "500", "line_height": "1.4", "tracking": "0.08em–0.15em" },
+        "overline": { "size": "11px", "weight": "500", "line_height": "1.4", "tracking": "0.15em" }
+      },
+      "font_families": {
+        "heading": "Inter",
+        "body": "Inter",
+        "mono": "JetBrains Mono"
+      },
+      "font_style_notes": "Inter for prose and UI; JetBrains Mono for kickers, paths, terminals, rate values, nav links, and form metadata. Never emoji as icons."
+    },
+    "spacing": {
+      "base_unit": "4px",
+      "scale": ["4", "8", "12", "16", "24", "32", "48", "64", "96", "128"],
+      "content_density": "Comfortable marketing sections; denser for dashboard/admin tables",
+      "section_rhythm": "Large vertical gaps (--s7–s9) between landing sections; forms use --s4–s5"
+    },
+    "layout": {
+      "grid_system": "Single-column content with optional 2-col hero; left gutter timeline (88px) on desktop",
+      "max_content_width": "1140px",
+      "columns": "1–2 marketing; denser grids for dashboard",
+      "gutter": "24px page padding; 88px timeline gutter",
+      "breakpoints": { "sm": "430px", "md": "760px", "lg": "960px" },
+      "alignment_tendency": "Left-aligned content; brand lockup left; CTAs inline"
+    },
+    "shape": {
+      "border_radius": { "small": "6px", "medium": "10px", "large": "16px", "pill": "99px" },
+      "border_usage": "1px solid --line / --line-soft; accent-dim for owned nodes",
+      "divider_style": "Hairline --line-soft horizontal rules between endpoints and quota rows"
+    },
+    "elevation": {
+      "strategy": "Flat surfaces with border; deep shadow only on terminal chrome",
+      "shadow_sm": "none",
+      "shadow_md": "0 18px 44px -20px rgba(0,0,0,0.9)",
+      "shadow_lg": "none — avoid multi-layer glow stacks"
+    },
+    "motion": {
+      "duration_fast": "150ms",
+      "duration_base": "180–300ms",
+      "easing": "cubic-bezier(0.16, 1, 0.3, 1)",
+      "scroll_behavior": "GSAP ScrollTrigger for waterfall bars and axis fill; CSS for hover micro-interactions",
+      "reduced_motion": "Disable scroll animations; keep instant state"
+    },
+    "components": {
+      "button_primary": "Filled --accent on dark text (#04101f), 6px radius, slight lift on hover",
+      "button_secondary": "Ghost with --line border, ink-2 text",
+      "input": "void background, --line border, focus --accent border; visible labels above fields",
+      "card": "surface + 1px line + r-md/r-lg — use only for interactive containers (pricing CTA, forms)",
+      "nav": "Sticky blurred void header; mono 12.5px links"
+    }
+  },
+  "design_style": {
+    "mood": "Precise, honest, terminal-adjacent — no hype",
+    "personality": "Senior engineer explaining a thin proxy; limits before promises",
+    "visual_language": "Trace/timeline metaphor, monospace metadata, syntax-colored terminal demos",
+    "composition": "One vertical narrative axis; hero = brand + one claim + terminal demo + CTA",
+    "imagery": "No stock photos; product itself (curl, waterfall, endpoints) is the visual",
+    "interaction_feel": "Snappy, instrumented, feedback-first (loading → success/error near field)",
+    "brand_voice": "Specific, bilingual EN/PT, anti-superlative; cURL is the argument",
+    "ornamentation": "Minimal — accent radial glow only in brand guide; landing stays flat void",
+    "whitespace_philosophy": "Generous section breathing; dense data rows inside panels"
+  },
+  "visual_effects": {
+    "overview": {
+      "effect_intensity": 3,
+      "performance_tier": "lightweight",
+      "composite_notes": "GSAP drives proportional bar draws and timeline fill; no WebGL/particles"
+    },
+    "canvas_2d": { "enabled": false },
+    "webgl_3d": { "enabled": false },
+    "particles": { "enabled": false },
+    "shaders": { "enabled": false },
+    "scroll_effects": {
+      "enabled": true,
+      "notes": "TraceMotion axis fill + waterfall bar scrub via ScrollTrigger"
+    },
+    "cursor_effects": { "enabled": false },
+    "svg_animation": { "enabled": false },
+    "glassmorphism": {
+      "enabled": true,
+      "notes": "Header only: rgba void 0.82 + blur(14px)"
+    },
+    "css_special": {
+      "enabled": true,
+      "notes": "pending bar hatch animation; semantic verb chips; language data-l toggle"
+    }
+  }
+}

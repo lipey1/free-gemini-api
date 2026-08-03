@@ -4,7 +4,7 @@
  * The site is statically exported, so every call goes straight from the
  * visitor's browser to the live instance. That is deliberate: rate limits are
  * per IP, and proxying through a server would put every visitor behind one
- * address and burn the 30/min budget in seconds.
+ * address and burn the 20/min free budget in seconds.
  */
 
 /**
@@ -129,6 +129,7 @@ let inFlight: Promise<string> | null = null;
 async function createSession(): Promise<string> {
   const res = await fetch(`${API_BASE}/create-session`, {
     method: "POST",
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: "{}",
   });
@@ -172,6 +173,7 @@ async function postChat(
 ): Promise<string> {
   const res = await fetch(`${API_BASE}/chat`, {
     method: "POST",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
@@ -209,6 +211,88 @@ export async function chat(prompt: string, signal?: AbortSignal): Promise<ChatRe
       const reply = await run(true);
       return { reply, elapsedMs: Date.now() - started };
     }
+    if (err instanceof ApiError) throw err;
+    if (err instanceof DOMException && err.name === "AbortError") throw err;
+    throw new ApiError(
+      "NETWORK",
+      err instanceof Error ? err.message : "Network request failed.",
+    );
+  }
+}
+
+/**
+ * Exercise an API key end-to-end: create-session → /chat with X-API-Key.
+ * Uses an ephemeral session token (does not touch the playground localStorage).
+ */
+export async function testApiKey(
+  apiKey: string,
+  prompt: string,
+  signal?: AbortSignal,
+): Promise<ChatResult> {
+  const key = apiKey.trim();
+  const text = prompt.trim();
+  if (!key) {
+    throw new ApiError("UNKNOWN", "Cole uma API key para testar.");
+  }
+  if (!text) {
+    throw new ApiError("UNKNOWN", "Digite um prompt para o teste.");
+  }
+
+  const started = Date.now();
+  const headers = {
+    "Content-Type": "application/json",
+    "X-API-Key": key,
+  };
+
+  const createSessionWithKey = async () => {
+    const res = await fetch(`${API_BASE}/create-session`, {
+      method: "POST",
+      credentials: "include",
+      headers,
+      body: "{}",
+      signal,
+    });
+    if (!res.ok) throw await toApiError(res);
+    const data = await res.json();
+    if (typeof data?.sessionToken !== "string") {
+      throw new ApiError("SESSION_CREATE_FAILED", "No sessionToken in response.");
+    }
+    return data.sessionToken as string;
+  };
+
+  const chatWithKey = async (token: string) => {
+    const res = await fetch(`${API_BASE}/chat`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        ...headers,
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ prompt: text }),
+      signal,
+    });
+    if (!res.ok) throw await toApiError(res);
+    const data = await res.json();
+    if (typeof data?.reply !== "string") {
+      throw new ApiError("UNKNOWN", "Response had no reply field.");
+    }
+    return data.reply;
+  };
+
+  try {
+    let token = await createSessionWithKey();
+    try {
+      const reply = await chatWithKey(token);
+      return { reply, elapsedMs: Date.now() - started };
+    } catch (err) {
+      if (err instanceof ApiError && RECOVERABLE.has(err.code)) {
+        token = await createSessionWithKey();
+        const reply = await chatWithKey(token);
+        return { reply, elapsedMs: Date.now() - started };
+      }
+      throw err;
+    }
+  } catch (err) {
     if (err instanceof ApiError) throw err;
     if (err instanceof DOMException && err.name === "AbortError") throw err;
     throw new ApiError(

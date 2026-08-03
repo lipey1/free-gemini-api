@@ -5,8 +5,12 @@ import { T } from "@/components/T";
 import { useLang } from "@/lib/i18n";
 import { API_BASE } from "@/lib/api";
 
-export function TopBar({ active }: { active?: "home" | "playground" }) {
-  const { lang, setLang, t } = useLang();
+export function TopBar({
+  active,
+}: {
+  active?: "home" | "playground" | "pricing" | "account";
+}) {
+  const { lang, setLang } = useLang();
 
   return (
     <div className="top">
@@ -16,10 +20,29 @@ export function TopBar({ active }: { active?: "home" | "playground" }) {
 
         <a
           className="top-link"
+          href="/pricing/"
+          data-active={active === "pricing"}
+          data-hide-sm="true"
+        >
+          <T k="nav.pricing" />
+        </a>
+        <a
+          className="top-link"
           href="/playground/"
           data-active={active === "playground"}
-        ><T k="nav.playground" /></a>
-        <a className="top-link" data-hide-sm="true" href={`${API_BASE}/docs`}><T k="nav.docs" /></a>
+        >
+          <T k="nav.playground" />
+        </a>
+        <a className="top-link" data-hide-sm="true" href={`${API_BASE}/docs`}>
+          <T k="nav.docs" />
+        </a>
+        <a
+          className="top-link"
+          href="/account/"
+          data-active={active === "account"}
+        >
+          <T k="nav.account" />
+        </a>
         <a
           className="top-link"
           data-hide-sm="true"
@@ -29,10 +52,6 @@ export function TopBar({ active }: { active?: "home" | "playground" }) {
         </a>
 
         <div className="lang" role="group" aria-label="Language / Idioma">
-          {/* The lit state comes from html[data-lang] in CSS, not React state.
-              React starts at "en" to match the pre-rendered markup, so a
-              state-driven highlight would light EN for a moment on a page
-              already showing Portuguese. aria-pressed settles at hydration. */}
           <button
             type="button"
             data-lang-btn="en"

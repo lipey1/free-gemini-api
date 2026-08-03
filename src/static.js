@@ -17,15 +17,32 @@ const SITE_DIR = path.resolve(
   process.env.SITE_DIR || "web/out",
 );
 
-/** Paths owned by the API. Never resolved against the filesystem. */
-const API_PREFIXES = [
-  "/health",
-  "/create-session",
-  "/chat",
-  "/session",
-  "/docs",
-  "/openapi.json",
-];
+/** Paths owned by the API. Page routes like /account/ and /admin/ must NOT match. */
+function isApiPath(urlPath) {
+  const raw = urlPath.split("?")[0] || "/";
+  const normalized =
+    raw.length > 1 && raw.endsWith("/") ? raw.slice(0, -1) : raw;
+
+  const exact = new Set([
+    "/health",
+    "/create-session",
+    "/chat",
+    "/docs",
+    "/openapi.json",
+    "/plans",
+  ]);
+  if (exact.has(normalized)) return true;
+
+  if (normalized.startsWith("/session")) return true;
+  if (normalized.startsWith("/auth")) return true;
+  if (normalized.startsWith("/billing")) return true;
+  if (normalized.startsWith("/account/usage")) return true;
+  if (normalized.startsWith("/account/api-keys")) return true;
+  if (normalized === "/admin/stats") return true;
+  if (normalized.startsWith("/admin/users")) return true;
+
+  return false;
+}
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -126,7 +143,7 @@ function registerStaticSite(app) {
   const send = async ({ request, set }) => {
     const urlPath = new URL(request.url).pathname;
 
-    if (API_PREFIXES.some((p) => urlPath === p || urlPath.startsWith(p + "/"))) {
+    if (isApiPath(urlPath)) {
       set.status = 404;
       return { ok: false, code: "NOT_FOUND", error: `No route for ${urlPath}.` };
     }
